@@ -7,9 +7,9 @@ export function reasonText(o, r, weather, popThreshold) {
   const parts = [];
   if (weather.pop >= popThreshold && o.outer && o.outer.rain_ok) parts.push(`降水${weather.pop}%なので雨に強い上着に`);
   else if (weather.pop >= popThreshold && o.shoes && o.shoes.rain_ok) parts.push(`降水${weather.pop}%なので雨に強い靴に`);
-  if (r.score.warmth >= 0.7) parts.push(`体感${Math.round(weather.feels)}°にちょうどよい暖かさ`);
-  else if (r.warmth_sum < r.band.target) parts.push(`体感${Math.round(weather.feels)}°。少し薄着なので注意`);
-  else parts.push(`体感${Math.round(weather.feels)}°。暑ければ一枚脱いで`);
+  if (r.score.warmth >= 0.7) parts.push(`体感${Math.round(weather.feels)}℃にちょうどよい暖かさ`);
+  else if (r.warmth_sum < r.band.target) parts.push(`体感${Math.round(weather.feels)}℃。少し薄着なので注意`);
+  else parts.push(`体感${Math.round(weather.feels)}℃。暑ければ一枚脱いで`);
   parts.push(REL[r.color_summary.relationship] || '');
   let text = '';
   for (const p of parts.filter(Boolean)) {

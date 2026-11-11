@@ -11,7 +11,7 @@ function hoursStrip(hours, date) {
     const { icon, label } = weatherLabel(h.code);
     return el('li', { 'aria-label': `${h.hour}時 ${label} ${h.temp}度 降水${h.pop}%` },
       el('small', { text: `${h.hour}時` }), el('span', { 'aria-hidden': 'true', text: icon }),
-      el('b', { text: `${h.temp}°` }), el('small', { class: h.pop >= 50 ? 'wet' : '', text: `${h.pop}%` }));
+      el('b', { text: `${h.temp}℃` }), el('small', { class: h.pop >= 50 ? 'wet' : '', text: `${h.pop}%` }));
   }));
 }
 
@@ -33,9 +33,9 @@ export function weatherCard(date, events, onSettings) {
       el('span', { class: 'wx-icon', 'aria-hidden': 'true', text: icon }),
       el('div', null,
         el('p', { class: 'wx-place', text: w.homeName }),
-        el('p', { class: 'wx-temp' }, el('b', { text: `${d.max}°` }), el('span', { text: ` / ${d.min}°　${label}` })))),
+        el('p', { class: 'wx-temp' }, el('b', { text: `${d.max}℃` }), el('span', { text: ` / ${d.min}℃　${label}` })))),
     el('ul', { class: 'wx-facts' },
-      el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}°` })),
+      el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
       el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
       el('li', null, el('small', { text: '紫外線' }), el('b', { text: String(d.uv) })),
       el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
@@ -51,7 +51,7 @@ export function weatherCard(date, events, onSettings) {
     const x = weatherLabel(vd.code);
     box.append(el('p', { class: 'wx-venue' },
       el('span', { class: 'chip', style: `--c:${ev.color}`, text: '会場' }),
-      ` ${v.name}　${x.icon} ${vd.max}°/${vd.min}°　体感${Math.round(daytimeFeels(vd))}°　降水${vd.pop}%`));
+      ` ${v.name}　${x.icon} ${vd.max}℃/${vd.min}℃　体感${Math.round(daytimeFeels(vd))}℃　降水${vd.pop}%`));
   });
   return box;
 }
