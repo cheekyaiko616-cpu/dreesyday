@@ -1,0 +1,6 @@
+/* アプリに同梱した書体（fonts/）。Event list と同じ。外から取りに行かないので、途中で書体が切り替わらない。
+   ・Barlow Condensed … 数字用（SIL Open Font License。fonts/OFL-Barlow.txt）
+   ・Cormorant Garamond … アプリ名用（SIL Open Font License。fonts/OFL-Cormorant.txt）
+   日本語は端末のフォントを使う。 */
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/BarlowCondensed-600.woff") format("woff"); }
+@font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 500; font-display: swap; src: url("../fonts/CormorantGaramond-500-italic.woff") format("woff"); }

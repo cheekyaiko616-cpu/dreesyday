@@ -1,0 +1,57 @@
+/* 下から出る画面（アイテム・お気に入り・マネキン・設定）と、その中の入力欄。Event list の sheets.css と同じ動き。 */
+.scrim {
+  cursor: pointer; position: fixed; inset: 0; z-index: 20;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, .45); transition: background-color .2s;
+  overscroll-behavior: none; touch-action: none;
+}
+.sheet {
+  cursor: auto; width: 100%; max-width: 640px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain; touch-action: pan-y;
+  background: var(--surface); border-radius: var(--r-l) var(--r-l) 0 0;
+  padding: var(--sp-4) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px));
+}
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.sheet-head h2 { font-size: var(--fs-h2); font-weight: 500; }
+.scrim.closing { background: rgba(0, 0, 0, 0); }
+
+.field { display: flex; flex-direction: column; gap: var(--sp-1); margin-top: var(--sp-4); min-width: 0; }
+.lbl, .field > label { font-size: var(--fs-cap); font-weight: 500; color: var(--muted); }
+.field label.inline { display: flex; align-items: center; gap: var(--sp-2); min-height: 20px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.seg-row { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.seg-opt { position: relative; }
+.seg-opt input { position: absolute; inset: 0; margin: 0; opacity: 0; }
+.seg-opt span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); font-size: var(--fs-md); font-weight: 500; }
+.seg-opt input:checked + span { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.seg-opt input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 2px; }
+.check { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-4); font-size: var(--fs-md); }
+.check input { width: 20px; height: 20px; margin: 0; }
+.range-row { display: flex; align-items: center; gap: var(--sp-3); }
+.range-row input { flex: 1; }
+.range-row output { width: 1.5em; font-family: var(--font-num); font-size: var(--fs-num-s); font-weight: 600; text-align: center; }
+.form-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
+.form-actions .grow { flex: 1 1 140px; }
+/* 実行・やめるのボタンは、画面の下に固定する */
+.form-actions.sticky {
+  position: sticky; bottom: 0; z-index: 1; margin: var(--sp-4) calc(-1 * var(--sp-4)) 0; padding: var(--sp-3) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
+  background: var(--surface); box-shadow: var(--sh-weak-up);
+}
+.confirm-box { margin-top: var(--sp-3); padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); }
+.confirm-box p { font-size: var(--fs-sm); }
+#mq-body, #st-body { padding-bottom: calc(var(--sp-5) + env(safe-area-inset-bottom, 0px)); }
+
+.it-top { display: flex; align-items: flex-end; gap: var(--sp-3); margin-top: var(--sp-3); }
+.it-photo { width: 128px; flex: none; }
+
+.st-group { margin-top: var(--sp-4); padding-top: var(--sp-4); border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.st-group:first-child { border-top: 0; padding-top: 0; }
+.st-group h3 { font-size: var(--fs-md); font-weight: 600; }
+.st-group > textarea, .st-group > .inline-row { width: 100%; }
+.inline-row { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.inline-row input[type="text"] { flex: 1 1 160px; width: auto; }
+.inline-row select { flex: 1; width: auto; }
+.tab-name { min-width: 7em; font-weight: 500; }
+.star-row { display: flex; gap: var(--sp-1); }
+.star { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--muted); font-size: 26px; }
+.star.on { color: #b7791f; }

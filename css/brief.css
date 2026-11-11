@@ -1,0 +1,42 @@
+/* 朝ブリーフ画面：今日／明日・天気・予定・評価・持ち物。 */
+.brief-top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.seg-bar { display: inline-flex; padding: 3px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); }
+.seg-btn { min-height: 36px; min-width: 56px; padding: 0 var(--sp-3); border: 0; border-radius: var(--r-pill); background: none; font-size: var(--fs-sm); color: var(--muted); }
+.seg-btn.on { background: var(--ink); color: var(--on-ink); font-weight: 600; }
+
+.wx-main { display: flex; align-items: center; gap: var(--sp-3); }
+.wx-icon { font-size: 44px; line-height: 1; }
+.wx-place { color: var(--muted); font-size: var(--fs-cap); }
+.wx-temp b { font-family: var(--font-num); font-size: var(--fs-num); font-weight: 600; }
+.wx-temp span { font-size: var(--fs-md); }
+.wx-facts { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); margin: var(--sp-3) 0 0; padding: 0; }
+.wx-facts li { display: flex; flex-direction: column; align-items: center; padding: var(--sp-2) 0; border-radius: var(--r-m); background: var(--bg); }
+.wx-facts small { color: var(--muted); font-size: 12px; }
+.wx-facts b { font-family: var(--font-num); font-size: var(--fs-num-s); font-weight: 600; line-height: 1.2; }
+.hours { list-style: none; display: flex; gap: var(--sp-1); margin: var(--sp-3) 0 0; padding: 0; overflow-x: auto; scrollbar-width: none; }
+.hours li { flex: none; display: flex; flex-direction: column; align-items: center; width: 48px; padding: var(--sp-1) 0; border-radius: var(--r-m); background: var(--bg); font-size: 13px; }
+.hours small { color: var(--muted); font-size: 11px; }
+.hours small.wet { color: #1f6fd1; }
+.hours b { font-family: var(--font-num); font-weight: 600; font-size: var(--fs-md); }
+.wx-venue { margin-top: var(--sp-2); font-size: var(--fs-sm); }
+
+.ev-list { list-style: none; display: flex; flex-direction: column; gap: var(--sp-3); margin: 0; padding: 0; }
+.ev-row { display: flex; align-items: flex-start; gap: var(--sp-2); padding-left: var(--sp-3); border-left: 4px solid var(--c); }
+.ev-row .chip { background: var(--c); margin-top: 2px; }
+.ev-title { font-size: var(--fs-lg); font-weight: 600; }
+.ev-meta, .ev-dress { color: var(--muted); font-size: var(--fs-sm); }
+.ev .note { margin-bottom: var(--sp-2); }
+
+.sect { display: flex; flex-direction: column; gap: var(--sp-3); }
+.sect-title { font-size: var(--fs-h2); font-weight: 600; }
+
+.rates { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-2); }
+.rate { min-height: 40px; padding: 0 var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--bg); font-size: var(--fs-sm); }
+.rate.on { background: var(--ink); border-color: var(--ink); color: var(--on-ink); font-weight: 600; }
+.worn .tag { padding: 0 var(--pill-px); border-radius: var(--r-pill); background: var(--bg); }
+
+.checks { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: 0; padding: 0; }
+.check-btn { display: inline-flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 0 var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); font-size: var(--fs-md); }
+.check-btn .box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid var(--muted); border-radius: var(--r-s); font-size: 14px; font-weight: 700; }
+.check-btn.on { color: var(--muted); text-decoration: line-through; }
+.check-btn.on .box { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }

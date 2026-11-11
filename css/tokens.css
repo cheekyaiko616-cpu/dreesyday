@@ -1,0 +1,69 @@
+/* 色・文字・明るい/暗いテーマの定義だけを置く（Event list の tokens.css と同じ値。アプリ間で見た目をそろえる）。 */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f2f3ef;
+  --top: #ffffff;    /* ヘッダーの色 */
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22360%22 height=%22360%22 viewBox=%220 0 360 360%22%3E%3Cg fill=%22%231a1d1b%22 fill-opacity=%220.045%22%3E%3Cg transform=%22translate%2880 70%29 rotate%2845%29 scale%282.8%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28270 150%29 rotate%28-25%29 scale%282.0%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28150 280%29 rotate%28110%29 scale%281.6%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* 背景の飛行機（ごく薄く、大きめに、間隔広く） */
+  --pattern-size: 360px 360px;
+  --status: #1a1d1b; /* 画面最上部（時計などの帯）。文字が白いので濃い色にする */
+  --surface: #ffffff;
+  --fg: #1a1d1b;
+  --muted: #545d58;
+  --line: #dcdfd8;
+  --ink: #1a1d1b;
+  --on-ink: #ffffff;
+  --on-c: #ffffff;   /* タブカラー（--c）の上に載せる文字色。暗い表示では --c が明るい色になるので、濃い色にする */
+  --danger: #b42318;
+  --note-bg: #fff1cf;
+  --note-fg: #5f4300;
+
+  /* 角丸は4段階：小部品(s) / ボタン・入力欄・カード(m) / 下から出る画面(l) / 丸ラベル・丸いボタン(pill) */
+  --r-s: 6px; --r-m: 10px; --r-l: 16px; --r-pill: 999px;
+  /* 余白は 4 / 8 / 12 / 16 / 24 の刻みにそろえる（直接 px を書くときも、この刻みの値だけを使う） */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px;
+  /* 丸ラベル（タブ名・バッジ・件数・上の帯）の共通の寸法：高さは、どれも同じになる */
+  --pill-py: 1px; --pill-px: 8px; --pill-lh: 1.5;
+  /* 影は2段階：弱（区切り用。固定の帯やボタン列の境目）と、強（浮き上がる部品。＋ボタン・引き出し・確認の枠）。濃さは --sh-a 1つで、明るい・暗い表示を切り替える */
+  --sh-a: .2;
+  --sh-weak-down: 0 10px 16px -12px rgba(0, 0, 0, calc(var(--sh-a) * 1.5)); /* 細い影は、同じ濃さだと弱く見えるので、少し濃くする */
+  --sh-weak-up: 0 -10px 10px -10px rgba(0, 0, 0, calc(var(--sh-a) * 1.5));
+  --sh-strong: 0 6px 20px rgba(0, 0, 0, var(--sh-a));
+  --sh-side: 6px 0 18px rgba(0, 0, 0, var(--sh-a));
+
+  --font-ui: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+  --font-brand: "Cormorant Garamond", "Hiragino Mincho ProN", Georgia, serif;
+  --font-num: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  /* 文字の大きさは、この表の値だけを使う（直接 px を書かない）。数字用の大きさ（num-s/num/display）は --font-num の書体専用 */
+  --fs-cap: 15px;   /* 補足・曜日・ラベル・小さなタグ */
+  --fs-sm: 15px;    /* 補助の文・ボタン・タブ */
+  --fs-md: 16px;    /* 本文・詳細・見出し(小) */
+  --fs-lg: 17px;    /* 予定名・入力欄・リストの見出し */
+  --fs-h2: 18px;    /* シートの見出し */
+  --fs-h1: 22px;    /* 画面名 */
+  --fs-xl: 28px;    /* アプリ名・ボタンの大きな記号 */
+  --fs-num-s: 24px; /* 数字（複数日の日付） */
+  --fs-num: 30px;   /* 数字（日付） */
+  --fs-display: 34px; /* 数字（月の帯）・起動画面の題名 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b2124;          /* 黒ではなく、少し青みのある落ち着いた濃い灰色 */
+    --top: #1b2124;
+    --status: #1b2124;
+    --surface: #242b2f;
+    --fg: #e3e8ea;
+    --muted: #a8b4b8;
+    --line: #2f393e;
+    --ink: #e3e8ea;
+    --on-ink: #1b2124;
+    --on-c: #1b2124;
+    --sh-a: .55; /* 暗い背景では、影を濃くしないと見えない */
+    --pattern: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22360%22 height=%22360%22 viewBox=%220 0 360 360%22%3E%3Cg fill=%22%23bed7e1%22 fill-opacity=%220.055%22%3E%3Cg transform=%22translate%2880 70%29 rotate%2845%29 scale%282.8%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28270 150%29 rotate%28-25%29 scale%282.0%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28150 280%29 rotate%28110%29 scale%281.6%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --danger: #ff8a7a;
+    --note-bg: #2e2610;
+    --note-fg: #f0cf85;
+
+  }
+}

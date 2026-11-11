@@ -1,0 +1,176 @@
+// 判定エンジン（js/engine/）の自動テスト。python3 tools/build.py の最初に動く（単独でも: node tools/test.mjs）。
+import { readFileSync } from 'node:fs';
+import { suggest } from '../js/engine/suggest.js';
+import { scoreOutfit, formalityNeed } from '../js/engine/score.js';
+import { totalColorScore, itemColorScore, isChromatic } from '../js/engine/color.js';
+import { applyFeedback, emptyAdjust } from '../js/engine/feedback.js';
+import { bringList } from '../js/engine/bring.js';
+import { reasonText } from '../js/engine/reason.js';
+
+const R = JSON.parse(readFileSync(new URL('../config/rules.json', import.meta.url), 'utf8'));
+let failed = 0;
+const ok = (cond, name) => { if (!cond) { failed++; console.log('NG:', name); } };
+
+const it = (id, category, warmth, color_main, extra = {}) => ({ id, name: id, category, sub_category: 'other', warmth, formality: 'casual', color_main, color_sub: '', rain_ok: false, status: 'active', ...extra });
+const items = [
+  it('t1', 'tops', 2, '#f2f2ef'), it('t2', 'tops', 3, '#1f2a44', { formality: 'neat' }), it('t3', 'tops', 1, '#e11d48'),
+  it('b1', 'bottoms', 3, '#3b5b8c'), it('b2', 'bottoms', 3, '#1c1c1e', { formality: 'neat' }),
+  it('o1', 'outer', 3, '#3f5e3a', { rain_ok: true }), it('o2', 'outer', 5, '#111214'), it('o3', 'outer', 4, '#9a8a78', { formality: 'formal' }),
+  it('s1', 'shoes', 2, '#f4f4f2'), it('s2', 'shoes', 3, '#5a3e2b', { rain_ok: true }),
+  it('a1', 'accessory', 1, '#2c3e50', { sub_category: 'umbrella', rain_ok: true }),
+  it('x1', 'tops', 5, '#ff0000', { status: 'laundry' })
+];
+const adjust = emptyAdjust();
+
+// 色
+ok(!isChromatic('#f2f2ef', R.color) && isChromatic('#e11d48', R.color), '無彩色の判定');
+ok(totalColorScore(['#ffffff', '#000000', '#e11d48'], R.color).chromatic_count === 1, '有彩色1色');
+ok(totalColorScore(['#ff0000', '#00ffff'], R.color).relationship === 'complement', '補色');
+ok(totalColorScore(['#ff0000', '#ff4400'], R.color).chromatic_count === 1, '近い色相は1色として数える');
+ok(totalColorScore(['#ff0000', '#00ff00', '#0000ff'], R.color).score === R.color.total.many, '3色以上は減点');
+ok(itemColorScore({ color_main: '#ff0000', color_sub: '#00ffff' }, R.color) === R.color.item.complement, 'アイテム内の補色');
+ok(totalColorScore([], R.color).relationship === 'neutral', '色なし');
+
+// 提案：雨・寒い日（予定あり）→ 3案、雨に強い上着と靴、洗濯中は使わない、傘を持つ
+const rainy = { feels: 8, pop: 70, uv: 2, wind: 3 };
+const r1 = suggest({ items, weather: rainy, events: [{ formality: 'casual' }], adjust, favorites: [] }, R);
+ok(r1.outfits.length === 3, '予定ありは3案');
+ok(r1.outfits[0].items.outer && r1.outfits[0].items.outer.rain_ok, '雨の日の1案目は雨に強い上着');
+ok(r1.outfits[0].items.shoes && r1.outfits[0].items.shoes.rain_ok, '雨の日の1案目は雨に強い靴');
+ok(r1.outfits.every((o) => o.items.tops.id !== 'x1'), '洗濯中は提案しない');
+ok(r1.outfits.every((o) => o.items.accessories.some((a) => a.id === 'a1')), '雨なら傘を持つ');
+ok(r1.outfits.every((o) => o.reason.length <= 40), '理由は40字以内');
+ok(r1.outfits.every((o) => o.score.total >= 0 && o.score.total <= 1), '点数は0〜1');
+ok(r1.outfits[0].score.total >= r1.outfits[1].score.total, '点数の高い順');
+
+// 予定なし・暑い日 → 2案、上着なしが上位
+const hot = { feels: 28, pop: 0, uv: 8, wind: 2 };
+const r2 = suggest({ items, weather: hot, events: [], adjust, favorites: [] }, R);
+ok(r2.outfits.length === 2 && r2.note, '予定なしは2案＋注記');
+ok(!r2.outfits[0].items.outer, '暑い日は上着なし');
+
+// きれいめの予定 → カジュアルのアイテムを使わない
+const r3 = suggest({ items, weather: { feels: 14, pop: 0, uv: 2, wind: 2 }, events: [{ formality: 'neat' }], adjust, favorites: [] }, R);
+ok(r3.outfits.length === 0 || r3.outfits.every((o) => ['tops', 'bottoms', 'outer', 'shoes'].every((k) => !o.items[k] || o.items[k].formality !== 'casual')), 'きれいめの日はカジュアルを除く');
+
+// トップスが無いとき
+ok(suggest({ items: items.filter((x) => x.category !== 'tops'), weather: hot, events: [], adjust, favorites: [] }, R).outfits.length === 0, 'トップスなしは提案なし');
+
+// 学習：寒かった → 暖かさを下げる → 同じ組の暖かさの点数が変わる
+const fit = { tops: items[0], bottoms: items[3], outer: items[4], shoes: items[8] };
+const a1 = applyFeedback(adjust, { mode: 'suggest', rating: 'cold', outfit: fit }, R).adjust;
+ok(a1.items.t1.warmth === -R.feedback.warmthStep, '寒かった → 暖かさを下げる');
+let a = adjust;
+for (let i = 0; i < 10; i++) a = applyFeedback(a, { mode: 'suggest', rating: 'cold', outfit: fit }, R).adjust;
+ok(a.items.t1.warmth === -R.feedback.warmthClip, '暖かさの補正は上限で止まる');
+let b = adjust;
+for (let i = 0; i < 20; i++) b = applyFeedback(b, { mode: 'self', rating: 'bad', outfit: fit }, R).adjust;
+ok(Object.values(b.outfits)[0] === -R.feedback.clip, '提案の重みは上限で止まる');
+const cm = applyFeedback(adjust, { mode: 'self', rating: 'color_mismatch', outfit: { tops: items[2], bottoms: items[3], outer: items[4] } }, R).adjust;
+ok(Object.keys(cm.pairs).length > 0 && Object.values(cm.pairs).every((v) => v < 0), '色が合わない → 色の組を下げる');
+const need = formalityNeed([], R.formality);
+const s0 = scoreOutfit(fit, { rules: R, adjust, weather: { feels: 12, pop: 0 }, need, favorites: [] }).score.total;
+const s1 = scoreOutfit(fit, { rules: R, adjust: applyFeedback(adjust, { mode: 'suggest', rating: 'good', outfit: fit }, R).adjust, weather: { feels: 12, pop: 0 }, need, favorites: [] }).score.total;
+ok(s1 >= s0, 'よかった → 点数が上がる');
+
+// 持ち物
+const bl = bringList({ weather: { pop: 70, uv: 7, wind: 9 }, events: [{ tab: 'Ado', title: 'ライブ' }], daily: ['財布', '財布'], umbrellaName: '折りたたみ傘' }, R);
+ok(bl.includes('折りたたみ傘') && bl.includes('帽子') && bl.includes('チケット（スマホ）') && bl.filter((x) => x === '財布').length === 1, '持ち物');
+ok(bringList({ weather: null, events: [], daily: [] }, R).length === 0, '天気なしでも動く');
+
+// 理由
+ok(reasonText(fit, { score: { warmth: 0.9 }, warmth_sum: 5, band: { target: 5 }, color_summary: { relationship: 'neutral' } }, { feels: 12, pop: 0 }, 50).length <= 40, '理由の長さ');
+
+
+// 切り抜きの後処理
+import { binarize, largestBlob, fillHoles, feather } from '../js/services/mask.js';
+import { measure, place, CANVAS } from '../js/engine/layout.js';
+{
+  const w = 20, h = 20, m = new Float32Array(w * h);
+  for (let y = 4; y < 16; y++) for (let x = 4; x < 16; x++) m[y * w + x] = 0.9;
+  m[8 * w + 8] = 0; // 中の穴（1画素）
+  m[1 * w + 1] = 0.9; // 離れた小さな塊
+  let b = binarize(m, 0.2); b = largestBlob(b, w, h);
+  ok(b[1 * w + 1] === 0 && b[5 * w + 5] === 1, '最大の塊だけ残す');
+  b = fillHoles(b, w, h, 4);
+  ok(b[8 * w + 8] === 1, '小さな穴は埋める');
+  ok(b[0] === 0, '外側は埋めない');
+  const a = feather(b, w, h, 1, 1);
+  ok(a[10 * w + 10] === 255 && a[0] === 0, '縁をなめらかにしても中は不透明・外は透明');
+}
+{
+  const w = 40, h = 60, px = new Uint8ClampedArray(w * h * 4);
+  for (let y = 0; y < h; y++) for (let x = 10; x < 40; x++) px[(y * w + x) * 4 + 3] = 255; // 右に寄った服
+  const m = measure(w, h, px);
+  ok(Math.abs(m.cx - 24.5) < 1, '重心を測る');
+  const r = place({ category: 'tops', sub_category: 'shirt' }, { ...m }, {});
+  ok(Math.abs(r.x + (m.cx / m.w) * r.w - 300) < 0.5, '重心が体の中心に来る');
+  ok(r.y >= 0 && r.y + r.h <= CANVAS.h, '画面の中に収まる');
+  const shoes = place({ category: 'shoes' }, { w: 60, h: 60, cx: 30 }, {});
+  ok(shoes.length === 2 && shoes[1].flip, '片方の靴は左右の2足にする');
+  ok(place({ category: 'shoes' }, { w: 300, h: 100, cx: 150 }, {}).length === 1, '両足の写真はそのまま');
+}
+
+// 体型とサイズ感
+import { bodyDims, parseSize, sizeFeel } from '../js/engine/fit.js';
+{
+  ok(bodyDims(null).ws === 1, '未登録なら標準の体');
+  ok(bodyDims({ height: 185, weight: 70 }).S > bodyDims({ height: 160, weight: 50 }).S, '背が高いほど大きい');
+  ok(bodyDims({ height: 170, weight: 90 }).ws > bodyDims({ height: 170, weight: 55 }).ws, '体重が重いほど幅が広い');
+  ok(parseSize('xl').n === 4 && parseSize('32').kind === 'inch' && parseSize('abc') === null, 'サイズ表記を読む');
+  ok(sizeFeel({ size: 'L' }, { top: 'M' }).wk > 1 && sizeFeel({ size: 'S' }, { top: 'M' }).wk < 1, 'ひとつ大きいとゆったり');
+  ok(sizeFeel({ size: 'M' }, { top: 'M' }).wk === 1 && sizeFeel({ size: 'M' }, {}).wk === 1, '同じサイズ／未登録は等倍');
+  ok(sizeFeel({ size: '34' }, { waist: 30 }).wk > sizeFeel({ size: '31' }, { waist: 30 }).wk, 'インチ差');
+}
+
+// 平置きの配置（アウター→パンツ→靴を縦に、インナーはアウターの右隣）
+import { flatLayout, FLAT_W } from '../js/engine/flatlay.js';
+{
+  const it = (category, w = 300, h = 300) => ({ category, w, h });
+  const L = flatLayout([it('tops'), it('outer', 400, 300), it('bottoms', 300, 500), it('shoes', 170, 100), it('accessory', 100, 100)]);
+  ok(L.rects.length === 5 && L.width === FLAT_W, '全部の服に置き場所がある');
+  ok(L.rects.every((r) => r.x >= 0 && r.x + r.w <= L.width + 0.01 && r.y >= 0 && r.y + r.h <= L.height + 0.01), '枠の中に収まる');
+  const R = (i) => L.rects.find((r) => r.index === i);
+  ok(R(1).y < R(2).y && R(2).y < R(3).y, '上から アウター → パンツ → 靴');
+  ok(R(0).x > R(1).x + R(1).w / 2 && Math.abs((R(0).y + R(0).h / 2) - (R(1).y + R(1).h / 2)) < 60, 'インナーはアウターの右隣');
+  ok(R(4).x > R(2).x + R(2).w / 2 && R(4).y > R(0).y, 'アクセサリーは右の列のインナーの下');
+  const N = flatLayout([it('tops'), it('bottoms', 300, 500), it('shoes', 170, 100)]);
+  const T = N.rects.find((r) => r.index === 0), B = N.rects.find((r) => r.index === 1);
+  ok(T.y < B.y && Math.abs(T.x + T.w / 2 - (B.x + B.w / 2)) < 1, 'アウターが無ければトップスがアウターの場所');
+  ok(flatLayout([it('tops')]).height === 330, '1つだけなら1マス');
+}
+
+// 画像の保存（data URL → バイト列）
+import { dataUrlToPacked } from '../js/data/images.js';
+{
+  const p = dataUrlToPacked('data:image/jpeg;base64,/9j/4AAQ');
+  ok(p.type === 'image/jpeg' && new Uint8Array(p.buf)[0] === 0xff && p.buf.byteLength === 6, 'data URL をバイト列にもどす');
+}
+
+// AI評価の文章
+import { evaluateText } from '../js/engine/evaluate.js';
+{
+  const r = { score: { total: 0.83, warmth: 0.9, rain: 0.4, formality: 0.8, color_items: 0.7, color_total: 0.6 }, color_summary: { relationship: 'neutral' } };
+  const t = evaluateText({ tops: { name: 'シャツ', size: 'XL' }, bottoms: null }, r, true, { top: 'M' });
+  ok(t.includes('総合 83点') && t.includes('◎ 暖かさ・服装の格') && t.includes('△ 雨への備え'), '点数・よい点・見直す点を書く');
+  ok(t.includes('シャツはゆったり'), 'サイズ感を書く');
+  ok(!evaluateText({}, r, false, {}).includes('雨への備え') && evaluateText({}, r, false, {}).includes('天気を使わない'), '天気が無ければ天気の項目は書かない');
+}
+
+// Gemini
+import { buildPrompt } from '../js/engine/gemini-prompt.js';
+import { askGemini } from '../js/services/gemini.js';
+{
+  const p = buildPrompt({ tops: { name: 'シャツ', color_main: '#112233', color_sub: '' }, accessories: [] }, '総合 80点', { feels: 12.4, pop: 30 }, ['ライブ']);
+  ok(p.includes('シャツ') && p.includes('体感12℃') && p.includes('ライブ') && p.includes('総合 80点'), 'プロンプトに服・天気・予定・採点が入る');
+  ok(!p.includes('data:image'), '写真は入らない');
+  const real = globalThis.fetch;
+  globalThis.fetch = async (u, o) => ({ ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: ' よい組み合わせです ' }] } }] }), _u: u, _o: o });
+  ok((await askGemini('x', 'K')) === 'よい組み合わせです', 'Geminiの返事を取り出す');
+  globalThis.fetch = async () => ({ ok: false, status: 429, json: async () => ({}) });
+  let msg = ''; try { await askGemini('x', 'K'); } catch (e) { msg = e.message; }
+  ok(msg.includes('上限'), '429は上限のメッセージ');
+  globalThis.fetch = real;
+}
+if (failed) { console.log(`${failed} 件の失敗`); process.exit(1); }
+console.log('自動テスト: すべて成功');

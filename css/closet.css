@@ -1,0 +1,31 @@
+/* クローゼット・コーデ作成・お気に入りの画面。 */
+.grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--sp-3); margin: 0; padding: 0; }
+.grid-item { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 0; border: 0; background: none; text-align: left; }
+.grid-item.off { opacity: .5; }
+.gi-name { font-size: var(--fs-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gi-meta { color: var(--muted); font-size: 12px; }
+
+.slot-title { margin-bottom: var(--sp-2); font-size: var(--fs-md); font-weight: 600; }
+.slot-title small { margin-left: var(--sp-1); color: var(--muted); font-weight: 400; font-size: var(--fs-cap); }
+.picker { list-style: none; display: flex; gap: var(--sp-2); margin: 0; padding: 2px; overflow-x: auto; scrollbar-width: none; }
+.pick { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 72px; padding: var(--sp-1); border: 2px solid transparent; border-radius: var(--r-m); background: none; }
+.pick small { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 11px; }
+.pick.on { border-color: var(--ink); background: var(--surface); }
+/* 上に固定する、点数だけの小さな帯（選ぶ欄を隠さないように1〜2行に収める） */
+.judge-mini {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 60px); z-index: 2;
+  display: flex; align-items: center; gap: var(--sp-3); min-height: 52px; padding: var(--sp-2) var(--sp-4);
+  border: 1px solid var(--line); border-radius: var(--r-l); background: var(--surface); box-shadow: var(--sh-weak-down); font-size: var(--fs-sm);
+}
+.judge-mini b { font-family: var(--font-num); font-size: var(--fs-num); font-weight: 600; line-height: 1; }
+.judge .note { margin-bottom: var(--sp-2); }
+
+.fav-main { display: flex; gap: var(--sp-3); }
+.fav-img { width: 120px; flex: none; border-radius: var(--r-m); border: 1px solid var(--line); }
+.fav-info { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+.stars { color: #b7791f; font-size: var(--fs-lg); letter-spacing: 2px; }
+.fav-memo { font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.fav-tags { color: var(--muted); font-size: var(--fs-cap); }
+
+.fav-ai, .ai-memo { margin: 0; font-size: var(--fs-sm); line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; color: var(--text); }
+.ai-memo { padding: var(--sp-2) var(--sp-3); border-radius: var(--r-m); background: var(--surface-2, #f1efe9); }

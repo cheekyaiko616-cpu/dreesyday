@@ -1,0 +1,54 @@
+{
+  "_説明": "判定のルールと重み。数値を変えると、提案の選び方が変わる。変えたら python3 tools/build.py を実行する",
+  "weights": { "warmth": 0.3, "rain": 0.15, "formality": 0.15, "color_items": 0.15, "color_total": 0.25 },
+  "warmth": {
+    "_説明": "体感温度(日中)ごとの、コーデ全体の暖かさの目安。全体 = トップス + ボトムス×0.5 + アウター",
+    "bottomsFactor": 0.5,
+    "tolerance": 3,
+    "bands": [
+      { "min": 25, "target": 2, "outer": "none" },
+      { "min": 20, "target": 3.5, "outer": "optional" },
+      { "min": 15, "target": 5, "outer": "need" },
+      { "min": 10, "target": 6.5, "outer": "need" },
+      { "min": 5, "target": 8, "outer": "need" },
+      { "min": -99, "target": 9.5, "outer": "need" }
+    ],
+    "noOuterPenalty": 0.6,
+    "heavyOuterPenalty": 0.5
+  },
+  "rain": { "_説明": "降水確率が popThreshold 以上の日は、雨の重みを rainyWeight に上げる（雨に強い上着・靴を優先）", "popThreshold": 50, "rainyWeight": 0.4, "foldingUmbrellaFrom": 30, "noOuterScore": 0.6, "notRainOkScore": 0.3 },
+  "formality": {
+    "_説明": "予定の服装の種類 → 必要な最低ライン(0=カジュアル,1=きれいめ,2=フォーマル)。sports はカジュアル寄りを高く評価",
+    "level": { "casual": 0, "neat": 1, "formal": 2 },
+    "required": { "casual": 0, "sports": 0, "home": 0, "neat": 1, "formal": 2 },
+    "overPenalty": 0.15,
+    "sportsNeatScore": 0.7
+  },
+  "color": {
+    "_説明": "無彩色の判定と、色の組み合わせの点数",
+    "achromaticSat": 0.15,
+    "achromaticDark": 0.15,
+    "achromaticLight": 0.92,
+    "mergeDeg": 20,
+    "analogousDeg": 30,
+    "complementTol": 30,
+    "item": { "single": 1, "analogous": 0.9, "complement": 0.85, "other": 0.55 },
+    "total": { "none": 0.85, "one": 1, "analogous": 0.9, "complement": 0.85, "two_other": 0.55, "many": 0.3, "many_neutral": 0.45 }
+  },
+  "favoriteBonus": 0.05,
+  "suggest": { "withEvents": 3, "noEvents": 2, "maxShared": 2, "prefilter": 8 },
+  "feedback": { "warmthStep": 0.5, "colorMismatch": -0.1, "good": 0.05, "goodProposal": 0.02, "bad": -0.05, "clip": 0.5, "warmthClip": 1.0 },
+  "tabFormality": {
+    "_説明": "Event list のタブ名(一部一致) → 服装の種類。設定画面で上書きできる",
+    "Ado": "casual", "らでん": "neat", "GT": "sports", "耐久": "sports", "WEC": "sports", "レプ": "casual"
+  },
+  "bring": {
+    "uvFrom": 6,
+    "windFrom": 8,
+    "event": [
+      { "match": "Ado|ライブ|らでん", "items": ["チケット（スマホ）", "モバイルバッテリー"] },
+      { "match": "GT|耐久|WEC|サーキット|もてぎ|富士|鈴鹿", "items": ["耳栓", "モバイルバッテリー", "レインウェア"] },
+      { "match": "レプ|爬虫類", "items": ["現金（小銭）", "保冷バッグ"] }
+    ]
+  }
+}
