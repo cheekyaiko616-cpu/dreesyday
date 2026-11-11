@@ -11,7 +11,7 @@ export function feedbackCard(rec, title, onRedo) {
   return el('section', { class: 'card worn' },
     el('h2', { class: 'card-title' }, title, el('span', { class: 'tag', text: rec.mode === 'suggest' ? 'おまかせ' : '自分で選択' })),
     fitRow(fit),
-    el('p', { class: 'hint', text: rec.rating ? '評価しました。変えるときは、もう一度タップ' : '着てみてどうでしたか？（1つタップ）' }),
+    el('p', { class: 'hint', text: rec.rating ? '評価済み' : '着てみてどうでしたか？' }),
     el('div', { class: 'rates' }, RATINGS.map(([id, label]) => el('button', {
       type: 'button', class: 'rate' + (rec.rating === id ? ' on' : ''), 'aria-pressed': String(rec.rating === id), text: label,
       onclick: async () => { const why = await rateOutfit(rec.date, id); if (why) toast(why); }

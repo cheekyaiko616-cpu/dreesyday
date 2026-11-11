@@ -21,12 +21,12 @@ export function weatherCard(date, events, onSettings) {
   const box = el('section', { class: 'card wx' }, el('h2', { class: 'card-title', text: '天気' }));
   if (w.status === 'loading') { box.append(el('p', { class: 'muted', text: '読み込み中…' })); return box; }
   if (w.status === 'nohome') {
-    box.append(el('p', { class: 'muted', text: '天気を出す場所（自宅など）を設定してください' }),
+    box.append(el('p', { class: 'muted', text: '場所が未設定です' }),
       el('button', { class: 'btn', type: 'button', text: '場所を設定', onclick: onSettings }));
     return box;
   }
   const d = w.home && w.home.days[date];
-  if (!d) { box.append(el('p', { class: 'muted', text: '天気を取得できませんでした（通信を確認してください）' })); return box; }
+  if (!d) { box.append(el('p', { class: 'muted', text: '天気を取得できません' })); return box; }
   const { icon, label } = weatherLabel(d.code);
   box.append(
     el('div', { class: 'wx-main' },

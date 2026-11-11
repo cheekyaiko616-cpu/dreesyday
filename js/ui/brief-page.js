@@ -45,7 +45,6 @@ function outfitSection(date, events, wx) {
   const kinds = events.map((ev) => ({ formality: formalityOf(ev) }));
   const res = suggest({ items: state.items, weather: wx, events: kinds, adjust: state.adjust, favorites: state.favorites }, RULES);
   if (res.note) box.append(el('p', { class: 'note', text: res.note }));
-  if (wx.from.length > 1) box.append(el('p', { class: 'hint', text: `${wx.from.join('・')}のうち、寒いほう・雨が多いほうで選んでいます` }));
   res.outfits.forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),
     el('button', { type: 'button', class: 'btn', text: 'マネキン', onclick: () => openMannequin(o.items) }),

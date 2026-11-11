@@ -9,12 +9,11 @@ const fLabel = (k) => (EVENT_FORMALITY.find((x) => x[0] === k) || ['', ''])[1];
 
 export function eventsCard(date, events) {
   const c = state.calendar;
-  const box = el('section', { class: 'card ev' }, el('h2', { class: 'card-title', text: '予定（カレンダーに追加したもの）' }));
+  const box = el('section', { class: 'card ev' }, el('h2', { class: 'card-title', text: '予定' }));
   if (c.status === 'loading') { box.append(el('p', { class: 'muted', text: '読み込み中…' })); return box; }
-  if (c.status === 'sample') box.append(el('p', { class: 'note', text: '見本の予定です（公開版では Event list の予定を読みます）' }));
-  if (c.status === 'stale') box.append(el('p', { class: 'note', text: '通信できないため、前回読めた予定を出しています' }));
-  if (c.status === 'error') box.append(el('p', { class: 'note', text: 'Event list の予定を読めませんでした' }));
-  if (!events.length) { box.append(el('p', { class: 'muted', text: 'この日の予定はありません。天気だけで服を選びます' })); return box; }
+  if (c.status === 'stale') box.append(el('p', { class: 'note', text: '前回の予定を表示中' }));
+  if (c.status === 'error') box.append(el('p', { class: 'note', text: '予定を読めません' }));
+  if (!events.length) { box.append(el('p', { class: 'muted', text: '予定なし' })); return box; }
   box.append(el('ul', { class: 'ev-list' }, events.map((ev) => el('li', { class: 'ev-row', style: `--c:${ev.color}` },
     el('span', { class: 'chip', text: ev.tab || '予定' }),
     el('div', null,

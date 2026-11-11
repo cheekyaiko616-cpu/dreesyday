@@ -30,6 +30,5 @@ export async function openMannequin(fit) {
   body.append(
     el('img', { class: 'mq-img', src: url, alt: 'マネキンに重ねたコーデ' }),
     el('div', { class: 'form-actions' },
-      el('a', { class: 'btn solid grow', href: url, download: `outfit-${Date.now()}.png`, text: '画像を保存（PNG）' })),
-    el('p', { class: 'hint', text: 'iPhoneでは、画像を長押しして「写真に保存」もできます' }));
+      el('a', { class: 'btn solid grow', href: url, download: `outfit-${Date.now()}.png`, text: '画像を保存' })));
 }

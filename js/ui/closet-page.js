@@ -19,7 +19,7 @@ export function renderCloset(root) {
     el('div', { class: 'filters' }, chip('all', 'すべて', state.items.length),
       CATEGORIES.map((c) => chip(c.id, c.label, state.items.filter((x) => x.category === c.id).length))));
   if (!list.length) {
-    root.append(el('p', { class: 'muted card', text: 'まだありません。「＋ 追加」から写真を撮って登録してください' }));
+    root.append(el('p', { class: 'muted card', text: 'まだありません' }));
     return;
   }
   root.append(el('ul', { class: 'grid' }, list.map((it) => el('li', null, el('button', {

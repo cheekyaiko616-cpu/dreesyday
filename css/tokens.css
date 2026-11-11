@@ -1,16 +1,16 @@
-/* 色・文字・明るい/暗いテーマの定義だけを置く（Event list の tokens.css と同じ値。アプリ間で見た目をそろえる）。 */
+/* 色・文字・明るい/暗いテーマの定義だけを置く。 */
 :root {
   color-scheme: light dark;
 
-  --bg: #f2f3ef;
+  --bg: #f7f2e8;
   --top: #ffffff;    /* ヘッダーの色 */
-  --pattern: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22360%22 height=%22360%22 viewBox=%220 0 360 360%22%3E%3Cg fill=%22%231a1d1b%22 fill-opacity=%220.045%22%3E%3Cg transform=%22translate%2880 70%29 rotate%2845%29 scale%282.8%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28270 150%29 rotate%28-25%29 scale%282.0%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28150 280%29 rotate%28110%29 scale%281.6%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); /* 背景の飛行機（ごく薄く、大きめに、間隔広く） */
-  --pattern-size: 360px 360px;
+  --pattern: linear-gradient(180deg, rgba(240, 185, 90, .22), rgba(240, 185, 90, 0) 280px); /* 上から朝日がさすような、ごく薄い色 */
+  --pattern-size: 100% 100%;
   --status: #1a1d1b; /* 画面最上部（時計などの帯）。文字が白いので濃い色にする */
   --surface: #ffffff;
   --fg: #1a1d1b;
   --muted: #545d58;
-  --line: #dcdfd8;
+  --line: #e3dccd;
   --ink: #1a1d1b;
   --on-ink: #ffffff;
   --on-c: #ffffff;   /* タブカラー（--c）の上に載せる文字色。暗い表示では --c が明るい色になるので、濃い色にする */
@@ -49,18 +49,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1b2124;          /* 黒ではなく、少し青みのある落ち着いた濃い灰色 */
-    --top: #1b2124;
-    --status: #1b2124;
-    --surface: #242b2f;
+    --bg: #1d1b19;          /* 黒ではなく、少し青みのある落ち着いた濃い灰色 */
+    --top: #1d1b19;
+    --status: #1d1b19;
+    --surface: #292623;
     --fg: #e3e8ea;
     --muted: #a8b4b8;
-    --line: #2f393e;
+    --line: #3a352f;
     --ink: #e3e8ea;
-    --on-ink: #1b2124;
-    --on-c: #1b2124;
+    --on-ink: #1d1b19;
+    --on-c: #1d1b19;
     --sh-a: .55; /* 暗い背景では、影を濃くしないと見えない */
-    --pattern: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22360%22 height=%22360%22 viewBox=%220 0 360 360%22%3E%3Cg fill=%22%23bed7e1%22 fill-opacity=%220.055%22%3E%3Cg transform=%22translate%2880 70%29 rotate%2845%29 scale%282.8%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28270 150%29 rotate%28-25%29 scale%282.0%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3Cg transform=%22translate%28150 280%29 rotate%28110%29 scale%281.6%29 translate%28-12 -12%29%22%3E%3Cpath d=%22M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --pattern: linear-gradient(180deg, rgba(240, 185, 90, .10), rgba(240, 185, 90, 0) 280px); /* 上から朝日がさすような、ごく薄い色 */
     --danger: #ff8a7a;
     --note-bg: #2e2610;
     --note-fg: #f0cf85;

@@ -16,6 +16,6 @@ export function renderNav() {
   clear(nav);
   NAV.forEach(([id, label, icon]) => nav.append(el('button', {
     type: 'button', class: 'nav-btn' + (state.screen === id ? ' on' : ''), 'aria-current': state.screen === id ? 'page' : null,
-    onclick: () => { if (state.screen === id) return; state.screen = id; window.scrollTo(0, 0); notify(); }
+    onclick: () => { if (state.screen === id) return; state.screen = id; $('#app-main').scrollTop = 0; notify(); }
   }, el('span', { class: 'nav-i', 'aria-hidden': 'true', text: icon }), el('span', { text: label }))));
 }

@@ -104,7 +104,7 @@ export function openItemSheet(item) {
   const actions = [save, el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: () => hideSheet(wrap) })];
   if (item) {
     const confirm = el('div', { class: 'confirm-box', hidden: true },
-      el('p', { text: 'このアイテムを削除しますか？（お気に入りの組み合わせからも外れます）' }),
+      el('p', { text: 'このアイテムを削除しますか？' }),
       el('div', { class: 'form-actions' },
         el('button', { type: 'button', class: 'btn danger grow', text: '削除する', onclick: async () => { await removeItem(item.id); hideSheet(wrap); toast('削除しました'); } }),
         el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: () => { confirm.hidden = true; } })));

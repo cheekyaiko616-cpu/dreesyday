@@ -47,7 +47,7 @@ function slotRow([key, label, optional]) {
       ? el('ul', { class: 'picker' }, list.map((it) => el('li', null, el('button', {
         type: 'button', class: 'pick' + (selected(it.id) ? ' on' : ''), 'aria-pressed': String(selected(it.id)), onclick: () => pick(it.id)
       }, thumbEl(it, 'm'), el('small', { text: itemName(it) })))))
-      : el('p', { class: 'muted', text: 'このアイテムは、まだありません' }));
+      : el('p', { class: 'muted', text: 'なし' }));
 }
 
 export function renderBuilder(root) {
@@ -64,8 +64,8 @@ export function renderBuilder(root) {
   // 判定（今日の天気と予定で）
   const result = el('section', { class: 'card judge' });
   const mini = el('div', { class: 'judge-mini', role: 'status' });
-  if (!ready) mini.append(el('span', { class: 'muted', text: 'トップスとボトムスを選ぶと、点数が出ます' }));
-  else if (!wx) mini.append(el('span', { class: 'muted', text: '天気が読めないため、点数は出せません' })), result.append(el('p', { class: 'muted', text: '天気が読めないため、点数を出せません（色だけ表示）' }), colorViz(fit));
+  if (!ready) mini.append(el('span', { class: 'muted', text: 'トップスとボトムスを選択' }));
+  else if (!wx) mini.append(el('span', { class: 'muted', text: '天気が読めないため、点数は出せません' })), result.append(colorViz(fit));
   else {
     const kinds = eventKinds(events.map((ev) => ({ formality: formalityOf(ev) })));
     const need = formalityNeed(kinds, RULES.formality);

@@ -3,9 +3,11 @@
 [hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; }
 html.lock { overflow: hidden; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
-  margin: 0; min-height: 100vh; min-height: 100dvh;
-  background: var(--bg) var(--pattern); background-size: var(--pattern-size);
+  margin: 0; height: 100vh; height: 100dvh;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; /* 上のタイトル・中身（ここだけスクロール）・下の切り替え */
+  background: var(--bg) var(--pattern) no-repeat; background-size: var(--pattern-size);
   color: var(--fg); font-family: var(--font-ui); font-size: var(--fs-md); line-height: 1.55;
   -webkit-tap-highlight-color: transparent;
 }
@@ -16,7 +18,7 @@ h1, h2, h3, p { margin: 0; }
 
 /* 上のタイトル */
 #app-header {
-  position: sticky; top: 0; z-index: 5;
+  z-index: 5;
   display: flex; align-items: center; justify-content: space-between;
   padding: calc(env(safe-area-inset-top, 0px) + var(--sp-2)) var(--sp-4) var(--sp-2);
   background: var(--top); box-shadow: var(--sh-weak-down);
@@ -25,13 +27,16 @@ h1, h2, h3, p { margin: 0; }
 .icon-btn { min-width: 44px; min-height: 44px; border: 0; background: none; font-size: var(--fs-xl); color: var(--muted); }
 
 /* 中身 */
-#app-main { max-width: 640px; margin: 0 auto; padding: var(--sp-4) var(--sp-4) calc(96px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: var(--sp-3); }
+#app-main { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+#app-main > * { max-width: 640px; margin-left: auto; margin-right: auto; }
+#app-main { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+#app-main > * { width: 100%; flex: none; }
 .page-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
 .page-title { font-size: var(--fs-h1); font-weight: 600; }
 
 /* 下の切り替えボタン */
 #app-nav {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+  z-index: 6;
   display: grid; grid-template-columns: repeat(4, 1fr);
   padding: var(--sp-1) var(--sp-2) calc(env(safe-area-inset-bottom, 0px) + var(--sp-1));
   background: var(--top); box-shadow: var(--sh-weak-up);
@@ -54,7 +59,7 @@ h1, h2, h3, p { margin: 0; }
 .actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
 .actions .btn.solid { flex: 1 1 96px; }
 
-input[type="text"], select, textarea {
+input[type="text"], input[type="number"], input[type="password"], select, textarea {
   width: 100%; min-height: 44px; padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); font-size: var(--fs-lg);
 }

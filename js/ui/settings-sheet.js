@@ -35,9 +35,9 @@ const group = (title, ...children) => el('section', { class: 'st-group' }, el('h
 function homeGroup() {
   const s = state.settings;
   const input = el('input', { type: 'text', 'aria-label': '場所の名前', placeholder: '例: 名古屋駅、豊田市', value: s.home ? s.home.name : '' });
-  const msg = el('p', { class: 'hint', text: s.home ? `いまの場所：${s.home.name}` : 'まだ設定していません' });
+  const msg = el('p', { class: 'hint', text: s.home ? `いまの場所：${s.home.name}` : '未設定' });
   const set = async (home) => { await saveSettings({ home }); msg.textContent = `いまの場所：${home.name}`; loadWeather(); toast('天気の場所を設定しました'); };
-  return group('天気の場所（自宅など）', msg,
+  return group('天気の場所', msg,
     el('div', { class: 'inline-row' }, input, el('button', { type: 'button', class: 'btn', text: '探す', onclick: async () => {
       const q = input.value.trim();
       if (!q) return;
@@ -52,7 +52,7 @@ function homeGroup() {
       msg.textContent = '現在地を調べています…';
       try { const p = await whereAmI(); await set({ name: '現在地', lat: Math.round(p.lat * 100) / 100, lon: Math.round(p.lon * 100) / 100 }); } catch (e) { msg.textContent = '現在地を使えませんでした（位置情報の許可を確認してください）'; }
     } }),
-    el('p', { class: 'hint', text: '予定の会場の天気は、Event list と同じ会場表で自動で調べます' }));
+  );
 }
 
 function bodyGroup() {
@@ -64,9 +64,8 @@ function bodyGroup() {
   const top = el('select', { 'aria-label': 'トップスのサイズ' }, [['', '未登録'], ...['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((x) => [x, x])].map(([v, l]) => el('option', { value: v, text: l })));
   top.value = b.top;
   const row = (label, ...c) => el('div', { class: 'inline-row' }, el('span', { class: 'tab-name', text: label }), ...c);
-  return group('からだとサイズ（マネキンに反映）',
+  return group('からだとサイズ',
     row('身長 cm', height), row('体重 kg', weight), row('トップス', top), row('ウエスト inch', waist),
-    el('p', { class: 'hint', text: '身長でマネキンの大きさ、体重で体の幅が変わります。アイテムにサイズ（S/M/L や 32 など）を入れると、自分のサイズとの差で、ゆったり・ぴったりが出ます。空のままでも使えます' }),
     el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => {
       await saveSettings({ body: { height: +height.value || 0, weight: +weight.value || 0, top: top.value, waist: +waist.value || 0 } });
       toast('保存しました');
@@ -75,9 +74,8 @@ function bodyGroup() {
 
 function geminiGroup() {
   const key = el('input', { type: 'password', autocomplete: 'off', 'aria-label': 'Gemini APIキー', placeholder: 'AQ.…（Google AI Studioで作成）', value: geminiKey() });
-  return group('Geminiで評価文を作る（任意）',
+  return group('Gemini APIキー',
     key,
-    el('p', { class: 'hint', text: 'キーはこの端末の中だけに保存します（バックアップにも入りません）。送るのは服の名前・色・点数・天気だけで、写真は送りません。無料枠で送った内容はGoogleの改善に使われることがあります。空のままなら、アプリ内の評価文を使います' }),
     el('div', { class: 'form-actions' },
       el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveGeminiKey(key.value); toast(key.value.trim() ? 'キーを保存しました' : 'キーを消しました'); } })));
 }
@@ -85,15 +83,14 @@ function geminiGroup() {
 function dailyGroup() {
   const ta = el('textarea', { rows: 2, 'aria-label': '毎日の持ち物' });
   ta.value = state.settings.daily.join('、');
-  return group('毎日の持ち物', ta, el('p', { class: 'hint', text: '「、」や空白で区切ります。天気や予定に合わせた物は自動で足されます' }),
+  return group('毎日の持ち物', ta,
     el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveSettings({ daily: ta.value.split(/[\s、,]+/) }); toast('保存しました'); } }));
 }
 
 function tabGroup() {
   const tabs = [...new Set(state.calendar.items.map((x) => x.tab).filter(Boolean))];
-  if (!tabs.length) return group('タブごとの服装', el('p', { class: 'hint', text: 'カレンダーに追加した予定が入ると、タブごとに選べます' }));
+  if (!tabs.length) return null;
   return group('タブごとの服装',
-    el('p', { class: 'hint', text: 'Event list のタブごとに、予定の日の服装を決めます' }),
     tabs.map((t) => {
       const sel = el('select', { 'aria-label': `${t}の服装` }, EVENT_FORMALITY.map(([v, l]) => el('option', { value: v, text: l })));
       sel.value = formalityOf({ tab: t, title: '' });
@@ -144,6 +141,6 @@ function dataGroup() {
 export function openSettings() {
   const body = $('#st-body');
   clear(body);
-  body.append(homeGroup(), bodyGroup(), geminiGroup(), dailyGroup(), tabGroup(), dataGroup());
+  body.append(...[homeGroup(), bodyGroup(), geminiGroup(), dailyGroup(), tabGroup(), dataGroup()].filter(Boolean));
   showSheet(wrap);
 }
