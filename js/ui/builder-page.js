@@ -15,7 +15,7 @@ import { todayIso } from '../util/date.js';
 import { thumbEl, itemName } from './thumb.js';
 import { scoreBars, colorViz } from './outfit-card.js';
 import { toast } from './toast.js';
-import { reviewOutfit, hasReviewKey } from '../data/review.js';
+import { reviewBox } from './review-box.js';
 
 const SLOTS = [['outer', 'アウター', true], ['tops', 'トップス', false], ['bottoms', 'ボトムス', false], ['shoes', 'シューズ', true], ['accessory', '小物', true]];
 
@@ -29,37 +29,6 @@ function fitNow() {
   const p = picks();
   const by = (id) => state.items.find((x) => x.id === id) || null;
   return { outer: by(p.outer), tops: by(p.tops), bottoms: by(p.bottoms), shoes: by(p.shoes), accessories: p.accessory.map(by).filter(Boolean) };
-}
-
-// Gemini のレビュー：同じ組み合わせ・天気なら使い回し、選び直している間は呼ばない（無料枠を使いすぎないため）
-const reviews = new Map();
-const inflight = new Map();
-function reviewBox(fit, wx, events, appScore, scoreB) {
-  const box = el('div', { class: 'review', 'aria-live': 'polite' });
-  if (!hasReviewKey()) { box.append(el('p', { class: 'muted', text: '設定でGeminiのキーを入れると、Geminiの厳しめレビューが付きます' })); return box; }
-  const names = events.map((e) => e.title || e.name || '').filter(Boolean);
-  const key = JSON.stringify([['outer', 'tops', 'bottoms', 'shoes'].map((k) => (fit[k] ? [fit[k].id, fit[k].color_main, fit[k].color_sub, fit[k].warmth, fit[k].formality] : 0)), fit.accessories.map((a) => a.id), Math.round(wx.feels), Math.round(wx.pop), names]);
-  const show = (rv) => {
-    const mix = Math.round((appScore + rv.score) / 2);
-    scoreB.textContent = String(mix);
-    clear(box);
-    box.append(el('h3', { class: 'card-title', text: `Geminiレビュー ${rv.score}点` }),
-      el('p', { class: 'muted', text: `総合 ${mix}点（アプリ ${appScore}点 と Gemini ${rv.score}点の平均）` }),
-      rv.good ? el('p', { text: `◎ ${rv.good}` }) : null, rv.bad ? el('p', { text: `△ ${rv.bad}` }) : null, rv.fix ? el('p', { text: `→ ${rv.fix}` }) : null);
-  };
-  if (reviews.has(key)) { show(reviews.get(key)); return box; }
-  box.append(el('p', { class: 'muted', text: 'Geminiがレビュー中…' }));
-  setTimeout(async () => {
-    if (!box.isConnected) return; // もう選び直されている
-    try {
-      if (!inflight.has(key)) inflight.set(key, reviewOutfit(fit, wx, names, appScore).finally(() => inflight.delete(key)));
-      const rv = await inflight.get(key);
-      reviews.set(key, rv);
-      if (reviews.size > 30) reviews.delete(reviews.keys().next().value);
-      if (box.isConnected) show(rv);
-    } catch (e) { if (box.isConnected) { clear(box); box.append(el('p', { class: 'muted', text: `Geminiのレビューは出せませんでした：${e.message}` })); } }
-  }, 900);
-  return box;
 }
 
 function slotRow([key, label, optional]) {
@@ -107,7 +76,7 @@ export function renderBuilder(root) {
     result.append(...[
       el('h2', { class: 'card-title', text: '判定（今日の天気・予定で）' }),
       low.length ? el('p', { class: 'note', text: `予定に対して、くだけすぎのアイテムがあります：${low.map(itemName).join('、')}` }) : null,
-      scoreBars(r.score), colorViz(fit), reviewBox(fit, wx, events, appScore, scoreB),
+      scoreBars(r.score), colorViz(fit), reviewBox(fit, wx, events, appScore, (n) => { scoreB.textContent = String(n); }),
       el('div', { class: 'actions' },
         el('button', { type: 'button', class: 'btn solid', text: '今日はこれを着る', onclick: async () => { await chooseOutfit(date, fit, 'self'); toast('今日のコーデにしました'); } }),
         el('button', { type: 'button', class: 'btn', text: '☆ 保存', onclick: async (e) => {

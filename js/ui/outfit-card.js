@@ -36,15 +36,18 @@ export function colorViz(fit) {
 
 /**
  * o: { rank, items, reason, score }。actions: 下に並べるボタン（要素の配列）。open: 点数を最初から開くか。
+ * review: (点数を書き換える関数) → レビューの要素（Gemini のレビューを付けるとき）。
  */
-export function outfitCard(o, actions, open = false) {
+export function outfitCard(o, actions, open = false, review = null) {
+  const summary = el('summary', { text: `点数 ${Math.round(o.score.total * 100)}　色と内訳を見る` });
   const more = el('details', { class: 'more', open: open || null },
-    el('summary', { text: `点数 ${Math.round(o.score.total * 100)}　色と内訳を見る` }),
+    summary,
     scoreBars(o.score), colorViz(o.items));
   return el('article', { class: 'card outfit' },
     el('header', { class: 'outfit-head' },
       o.rank ? el('span', { class: 'rank', text: `案${o.rank}` }) : null,
       el('p', { class: 'reason', text: o.reason })),
-    flatlayEl(o.items), fitNames(o.items), more,
+    flatlayEl(o.items), fitNames(o.items),
+    review ? review((n) => { summary.textContent = `点数 ${n}　色と内訳を見る`; }) : null, more,
     actions && actions.length ? el('div', { class: 'actions' }, actions) : null);
 }

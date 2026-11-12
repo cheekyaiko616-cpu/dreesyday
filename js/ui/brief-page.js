@@ -18,6 +18,7 @@ import { feedbackCard } from './feedback-card.js';
 import { outfitCard } from './outfit-card.js';
 import { openSettings } from './settings-sheet.js';
 import { toast } from './toast.js';
+import { reviewBox } from './review-box.js';
 
 let sugKey = '';      // 提案の計算結果を使い回すための印（入力が同じなら、同じ結果）
 let sugRes = null;
@@ -55,7 +56,7 @@ function outfitSection(date, events, wx) {
   res.outfits.forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),
     el('button', { type: 'button', class: 'btn', text: '☆ 保存', 'aria-label': 'お気に入りに保存', onclick: () => addFavorite(o.items) })
-  ])));
+  ], false, (set) => reviewBox(o.items, wx, events, Math.round(o.score.total * 100), set))));
   return box;
 }
 
