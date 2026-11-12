@@ -172,5 +172,14 @@ import { askGemini } from '../js/services/gemini.js';
   ok(msg.includes('上限'), '429は上限のメッセージ');
   globalThis.fetch = real;
 }
+
+// AI判定の答えの検査
+import { parseJudge } from '../js/engine/item-judge.js';
+{
+  const r = parseJudge({ category: 'tops', sub: 'knit', name: ' ネイビーのニット ', color_main: '#1F2A44', color_sub: 'x', warmth: 4.4, formality: 'neat', rain_ok: false });
+  ok(r.category === 'tops' && r.sub === 'knit' && r.name === 'ネイビーのニット' && r.color_main === '#1f2a44' && r.color_sub === '' && r.warmth === 4 && r.formality === 'neat' && r.rain_ok === false, '判定結果を整える');
+  ok(parseJudge({ category: 'shoes', sub: 'knit' }).sub === 'other', '種類に合わない細かい種類は「その他」');
+  ok(Object.keys(parseJudge({ category: 'ufo', color_main: 'red' })).join() === 'color_sub', '使えない項目は入れない');
+}
 if (failed) { console.log(`${failed} 件の失敗`); process.exit(1); }
 console.log('自動テスト: すべて成功');

@@ -8,6 +8,9 @@ import { shrinkPhoto, guessColors } from '../services/photo.js';
 import { cutOut } from '../services/cutout.js';
 import { thumbEl } from './thumb.js';
 import { toast } from './toast.js';
+import { judgeItem } from '../data/item-judge.js';
+import { geminiKey } from '../data/gemini-key.js';
+import { photoURL } from '../data/images.js';
 
 const MARKUP = `
   <div class="sheet" id="it-sheet" role="dialog" aria-modal="true" aria-labelledby="it-heading">
@@ -64,6 +67,27 @@ export function openItemSheet(item) {
     clear(subBox);
     subBox.append(field('細かい種類', seg('it-sub', SUBS[cat], SUBS[cat].some((x) => x[0] === d.sub_category) ? d.sub_category : 'other')));
   };
+  // AIの判定結果を入力欄に入れる
+  const applyJudge = (r) => {
+    if (r.name) name.value = r.name;
+    if (r.category) { d.category = r.category; d.sub_category = r.sub; const radio = body.querySelector(`input[name="it-cat"][value="${r.category}"]`); if (radio) radio.checked = true; refreshSubs(d.category); }
+    if (r.color_main) main.value = r.color_main;
+    hasSub.checked = !!r.color_sub; sub.disabled = !r.color_sub; if (r.color_sub) sub.value = r.color_sub;
+    if (r.warmth) { warmth.value = r.warmth; warmthOut.textContent = String(r.warmth); }
+    if (r.formality) body.querySelectorAll('input[name="it-form"]').forEach((x) => { x.checked = x.value === r.formality; });
+    if (typeof r.rain_ok === 'boolean') rain.checked = r.rain_ok;
+    refreshPreview();
+  };
+  const aiBtn = el('button', { type: 'button', class: 'btn', text: 'AIで判定' });
+  const runJudge = async (url) => {
+    if (!geminiKey()) { toast('設定でGeminiのキーを入れると使えます'); return; }
+    if (!url) { toast('先に写真を選んでください'); return; }
+    aiBtn.disabled = true; aiBtn.textContent = '判定中…';
+    const { result, error } = await judgeItem(url);
+    aiBtn.disabled = false; aiBtn.textContent = 'AIで判定';
+    if (result) { applyJudge(result); toast('AIが判定しました。違っていたら直してください'); } else toast(`${error}（色は写真から入れています）`);
+  };
+  aiBtn.addEventListener('click', async () => runJudge(pending.photoUrl || (d.id && d.hasPhoto ? await photoURL(d.id) : '')));
   file.addEventListener('change', async () => {
     const f = file.files && file.files[0];
     if (!f) return;
@@ -74,7 +98,7 @@ export function openItemSheet(item) {
       main.value = c.main;
       hasSub.checked = !!c.sub; sub.disabled = !c.sub; if (c.sub) sub.value = c.sub;
       refreshPreview();
-      toast('写真から色を入れました。違っていたら直してください');
+      if (geminiKey()) runJudge(dataUrl); else toast('写真から色を入れました。違っていたら直してください');
       cutting = cutOut(canvas).then((r) => { pending.cut = r; toast(r.method === 'ai' ? '背景を切り抜きました' : '背景を簡易的に切り抜きました'); })
               .catch(() => { pending.cut = null; toast('背景の切り抜きはできませんでした（写真のまま使います）'); });
     } catch (e) { toast('写真を読み込めませんでした'); }
@@ -113,7 +137,7 @@ export function openItemSheet(item) {
   }
 
   body.prepend(
-    el('div', { class: 'it-top' }, preview, el('label', { class: 'btn', for: 'it-file', text: item && item.hasPhoto ? '写真を変える' : '写真を選ぶ' }), file),
+    el('div', { class: 'it-top' }, preview, el('label', { class: 'btn', for: 'it-file', text: item && item.hasPhoto ? '写真を変える' : '写真を選ぶ' }), aiBtn, file),
     field('名前', name),
     field('種類', cats), subBox,
     el('div', { class: 'two' },
