@@ -38,12 +38,17 @@ const memo = { thumb: new Map(), photo: new Map(), cut: new Map() };
 const LIMIT = { thumb: 400, photo: 24, cut: 16 };
 function remember(kind, id, promise, onDrop) {
   const m = memo[kind];
+  promise.catch(() => { if (m.get(id) === promise) m.delete(id); }); // 失敗は覚えない（次にもう一度読む）
   m.delete(id); m.set(id, promise);
   while (m.size > LIMIT[kind]) { const [k0, v0] = m.entries().next().value; m.delete(k0); if (onDrop) v0.then(onDrop, () => {}); }
   return promise;
 }
 const recall = (kind, id) => { const m = memo[kind]; if (!m.has(id)) return null; const v = m.get(id); m.delete(id); m.set(id, v); return v; };
-const forget = (id) => KINDS.forEach((k) => memo[k].delete(id));
+const stamps = new Map(); // 画像が差し替わったことが分かる印（描画の使い回しの判定に使う）
+const imgMemo = new Map(); // デコード済みの写真 Image（小物など、毎回つくり直さない）
+const touch = (id) => { stamps.set(id, (stamps.get(id) || 0) + 1); imgMemo.delete(id); };
+const forget = (id) => { touch(id); KINDS.forEach((k) => memo[k].delete(id)); };
+export const imageStamp = (id) => stamps.get(id) || 0;
 
 // ---- 保存 ----
 async function makeThumb(img) {
@@ -60,7 +65,8 @@ export async function storePhoto(id, dataUrl) {
   const thumb = await makeThumb(img);
   await put('images', key(id, 'photo'), packed);
   await put('images', key(id, 'thumb'), thumb);
-  memo.photo.delete(id); memo.thumb.delete(id);
+  if (img.close) img.close();
+  touch(id); memo.photo.delete(id); memo.thumb.delete(id);
 }
 
 /** 切り抜きを保存する。rgb: 不透明な色の canvas。alpha: 0〜255 の透明度（w*h）。 */
@@ -71,7 +77,7 @@ export async function storeCut(id, rgb, alpha) {
   ag.putImageData(ad, 0, 0);
   const [c, a] = await Promise.all([toBlob(rgb, 'image/jpeg', CUT_JPEG), toBlob(ac, 'image/png')]);
   await put('images', key(id, 'cut'), { rgb: await pack(c), a: await pack(a), w, h });
-  memo.cut.delete(id);
+  touch(id); memo.cut.delete(id);
 }
 
 /** 透明な所の色を、まわりの服の色でうめる（JPEG にしたとき、縁が黒ずまないように）。 */
@@ -104,7 +110,7 @@ export async function storeCutFromPng(id, dataUrl) {
   await storeCut(id, c, alpha);
 }
 
-export async function removeCut(id) { memo.cut.delete(id); await del('images', key(id, 'cut')); }
+export async function removeCut(id) { touch(id); memo.cut.delete(id); await del('images', key(id, 'cut')); }
 
 export async function removeImages(id) {
   forget(id);
@@ -132,9 +138,11 @@ export function cutCanvas(id) {
     const [rgb, a] = await Promise.all([decodeBlobImage(r.rgb), decodeBlobImage(r.a)]);
     const w = r.w, h = r.h, c = mk(w, h), g = c.getContext('2d', { willReadFrequently: true });
     g.drawImage(rgb, 0, 0, w, h);
+    if (rgb.close) rgb.close();
     const d = g.getImageData(0, 0, w, h);
     const ac = mk(w, h), ag = ac.getContext('2d', { willReadFrequently: true });
     ag.drawImage(a, 0, 0, w, h);
+    if (a.close) a.close();
     const ad = ag.getImageData(0, 0, w, h).data;
     for (let i = 0; i < w * h; i++) d.data[i * 4 + 3] = ad[i * 4];
     g.putImageData(d, 0, 0);
@@ -145,8 +153,11 @@ export function cutCanvas(id) {
 
 /** 写真を Image で（切り抜きの生成・マネキンの代用に使う）。 */
 export async function photoImage(id) {
+  if (imgMemo.has(id)) return imgMemo.get(id);
   const url = await photoURL(id);
-  return url ? loadFrom(url) : null;
+  const img = url ? await loadFrom(url) : null;
+  if (img) { imgMemo.set(id, img); if (imgMemo.size > 12) imgMemo.delete(imgMemo.keys().next().value); }
+  return img;
 }
 
 // ---- バックアップ用 ----
@@ -169,13 +180,13 @@ export async function importImages(id, x) {
     if (typeof x.thumb === 'string' && x.thumb.startsWith('data:image/')) { // 小さな写真も付いているときは、開かずにそのまま入れる（速い）
       await put('images', key(id, 'photo'), dataUrlToPacked(x.photo));
       await put('images', key(id, 'thumb'), dataUrlToPacked(x.thumb));
-      memo.photo.delete(id); memo.thumb.delete(id);
+      touch(id); memo.photo.delete(id); memo.thumb.delete(id);
     } else await storePhoto(id, x.photo);
     hasPhoto = true;
   }
   if (typeof x.cutRgb === 'string' && typeof x.cutAlpha === 'string' && x.cutW > 0 && x.cutH > 0) {
     await put('images', key(id, 'cut'), { rgb: dataUrlToPacked(x.cutRgb), a: dataUrlToPacked(x.cutAlpha), w: x.cutW, h: x.cutH });
-    memo.cut.delete(id); hasCut = true;
+    touch(id); memo.cut.delete(id); hasCut = true;
   } else if (typeof x.cut === 'string' && x.cut.startsWith('data:image/png')) { await storeCutFromPng(id, x.cut); hasCut = true; }
   return { hasPhoto, hasCut };
 }

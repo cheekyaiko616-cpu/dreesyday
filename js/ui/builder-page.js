@@ -79,11 +79,16 @@ export function renderBuilder(root) {
       el('div', { class: 'actions' },
         el('button', { type: 'button', class: 'btn solid', text: '今日はこれを着る', onclick: async () => { await chooseOutfit(date, fit, 'self'); toast('今日のコーデにしました'); } }),
         el('button', { type: 'button', class: 'btn', text: 'マネキン', onclick: () => openMannequin(fit) }),
-        el('button', { type: 'button', class: 'btn', text: '☆ 保存', onclick: async () => {
-          const img = await drawMannequin(fit);
-          const saved = await saveFavorite({ items: idsOf(fit), image: img.toDataURL('image/jpeg', 0.9), ai: aiEvaluation(fit, date) });
-  upgradeWithGemini(saved, fit, date);
-          toast('お気に入りに保存しました');
+        el('button', { type: 'button', class: 'btn', text: '☆ 保存', onclick: async (e) => {
+          const btn = e.currentTarget;
+          if (btn.disabled) return;
+          btn.disabled = true; // 連打で二重に保存しない
+          try {
+            const img = await drawMannequin(fit);
+            const saved = await saveFavorite({ items: idsOf(fit), image: img.toDataURL('image/jpeg', 0.9), ai: aiEvaluation(fit, date) });
+            upgradeWithGemini(saved, fit, date);
+            toast('お気に入りに保存しました');
+          } finally { btn.disabled = false; }
         } }))].filter(Boolean)); // 要素の append は null を飛ばさないので、先に除く
   }
   root.append(mini, ...SLOTS.map(slotRow));

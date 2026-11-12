@@ -32,12 +32,12 @@ export async function loadFavorites() {
   state.favorites = (await getAll('favorites')).map(clean).filter(Boolean).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
-export async function saveFavorite(data) {
+export async function saveFavorite(data, { quiet = false } = {}) {
   const f = clean({ ...data, id: data.id || `f${Date.now().toString(36)}` });
   await put('favorites', f.id, f);
   const i = state.favorites.findIndex((x) => x.id === f.id);
   if (i >= 0) state.favorites[i] = f; else state.favorites.unshift(f);
-  notify();
+  if (!quiet) notify();
   return f;
 }
 

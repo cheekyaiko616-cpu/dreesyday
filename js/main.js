@@ -19,6 +19,7 @@ import { initItemSheet } from './ui/item-sheet.js';
 import { initFavSheet } from './ui/fav-sheet.js';
 import { initMannequinSheet } from './ui/mannequin-sheet.js';
 import { initSettingsSheet } from './ui/settings-sheet.js';
+import { initSettingsDetail } from './ui/settings-detail.js';
 import { todayIso } from './util/date.js';
 import { ensureCuts } from './services/ensure-cut.js';
 import { seedIfNeeded } from './ui/sample-seed.js';
@@ -38,7 +39,10 @@ async function start() {
   initFavSheet();
   initMannequinSheet();
   initSettingsSheet();
-  await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey()]);
+  initSettingsDetail();
+  try { // 読み込みに失敗しても、画面は出す（空の状態で動く）
+    await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey()]);
+  } catch (e) { console.error(e); }
   if (__PREVIEW__) { try { await seedIfNeeded(); } catch (e) { console.error(e); } } // 確認用：クローゼット・コーデの見本（本番では入れない）
   state.ready = true;
   subscribe(render);

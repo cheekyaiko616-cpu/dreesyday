@@ -11,6 +11,8 @@ import { saveFavorite } from '../data/favorites.js';
 
 let tag = '';
 
+const filling = new Set(); // 保存中のお気に入り（二重に保存しない）
+
 export function renderFavorites(root) {
   clear(root);
   root.append(el('div', { class: 'page-head' }, el('h1', { class: 'page-title', text: 'お気に入り' })));
@@ -25,9 +27,17 @@ export function renderFavorites(root) {
     root.append(el('p', { class: 'muted card', text: '提案やコーデ作成の「☆ 保存」で、ここに残ります' }));
     return;
   }
-  list.forEach((f) => {
-    const fit = fitOf(f.items);
-    if (!f.ai && (fit.tops || fit.bottoms)) { saveFavorite({ ...f, ai: aiEvaluation(fit) }); } // 前に保存したもの：AI評価を1回つける
+  list.forEach((src) => {
+    const fit = fitOf(src.items);
+    let f = src;
+    if (!f.ai && (fit.tops || fit.bottoms)) { // 前に保存したもの：AI評価を1回つける（画面の再描画はしない）
+      const ev = aiEvaluation(fit, undefined, true);
+      f = { ...src, ai: ev.text };
+      if (ev.weather && !filling.has(src.id)) { // 天気が読めるときだけ保存する（天気なしの評価を固定しない）
+        filling.add(src.id);
+        saveFavorite(f, { quiet: true }).catch(() => {}).finally(() => filling.delete(src.id));
+      }
+    }
     root.append(el('article', { class: 'card fav' },
       el('div', { class: 'fav-main' },
         f.image ? el('img', { class: 'fav-img', src: f.image, alt: 'マネキンに重ねたコーデ' }) : null,

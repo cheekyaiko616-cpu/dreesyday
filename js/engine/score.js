@@ -93,10 +93,7 @@ export function scoreOutfit(o, ctx) {
   const outfitDelta = adjust.outfits[outfitKey(o)] || 0;
   // お気に入りに近い組み合わせ（同じアイテムが多いほど）を少し上げる
   const ids = new Set(items.map((it) => it.id));
-  const fav = Math.max(0, ...(ctx.favorites || []).map((f) => {
-    const fids = Object.values(f.items || {}).flat().filter(Boolean);
-    return fids.length ? fids.filter((x) => ids.has(x)).length / fids.length : 0;
-  }));
+  const fav = Math.max(0, ...(ctx.favIds || (ctx.favIds = (ctx.favorites || []).map((f) => Object.values(f.items || {}).flat().filter(Boolean)))).map((fids) => (fids.length ? fids.filter((x) => ids.has(x)).length / fids.length : 0)));
   total += itemDelta + pairDelta + outfitDelta + fav * R.favoriteBonus;
 
   return {

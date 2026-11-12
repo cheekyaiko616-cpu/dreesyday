@@ -32,7 +32,7 @@ ok(itemColorScore({ color_main: '#ff0000', color_sub: '#00ffff' }, R.color) === 
 ok(totalColorScore([], R.color).relationship === 'neutral', '色なし');
 
 // 提案：雨・寒い日（予定あり）→ 3案、雨に強い上着と靴、洗濯中は使わない、傘を持つ
-const rainy = { feels: 8, pop: 70, uv: 2, wind: 3 };
+const rainy = { feels: 8, pop: 70, wind: 3 };
 const r1 = suggest({ items, weather: rainy, events: [{ formality: 'casual' }], adjust, favorites: [] }, R);
 ok(r1.outfits.length === 3, '予定ありは3案');
 ok(r1.outfits[0].items.outer && r1.outfits[0].items.outer.rain_ok, '雨の日の1案目は雨に強い上着');
@@ -44,13 +44,13 @@ ok(r1.outfits.every((o) => o.score.total >= 0 && o.score.total <= 1), '点数は
 ok(r1.outfits[0].score.total >= r1.outfits[1].score.total, '点数の高い順');
 
 // 予定なし・暑い日 → 2案、上着なしが上位
-const hot = { feels: 28, pop: 0, uv: 8, wind: 2 };
+const hot = { feels: 28, pop: 0, wind: 2 };
 const r2 = suggest({ items, weather: hot, events: [], adjust, favorites: [] }, R);
 ok(r2.outfits.length === 2 && r2.note, '予定なしは2案＋注記');
 ok(!r2.outfits[0].items.outer, '暑い日は上着なし');
 
 // きれいめの予定 → カジュアルのアイテムを使わない
-const r3 = suggest({ items, weather: { feels: 14, pop: 0, uv: 2, wind: 2 }, events: [{ formality: 'neat' }], adjust, favorites: [] }, R);
+const r3 = suggest({ items, weather: { feels: 14, pop: 0, wind: 2 }, events: [{ formality: 'neat' }], adjust, favorites: [] }, R);
 ok(r3.outfits.length === 0 || r3.outfits.every((o) => ['tops', 'bottoms', 'outer', 'shoes'].every((k) => !o.items[k] || o.items[k].formality !== 'casual')), 'きれいめの日はカジュアルを除く');
 
 // トップスが無いとき
@@ -74,8 +74,8 @@ const s1 = scoreOutfit(fit, { rules: R, adjust: applyFeedback(adjust, { mode: 's
 ok(s1 >= s0, 'よかった → 点数が上がる');
 
 // 持ち物
-const bl = bringList({ weather: { pop: 70, uv: 7, wind: 9 }, events: [{ tab: 'Ado', title: 'ライブ' }], daily: ['財布', '財布'], umbrellaName: '折りたたみ傘' }, R);
-ok(bl.includes('折りたたみ傘') && bl.includes('帽子') && bl.includes('チケット（スマホ）') && bl.filter((x) => x === '財布').length === 1, '持ち物');
+const bl = bringList({ weather: { pop: 70, wind: 9 }, events: [{ tab: 'Ado', title: 'ライブ' }], daily: ['財布', '財布'], umbrellaName: '折りたたみ傘' }, R);
+ok(bl.includes('折りたたみ傘') && bl.includes('チケット（スマホ）') && bl.filter((x) => x === '財布').length === 1, '持ち物');
 ok(bringList({ weather: null, events: [], daily: [] }, R).length === 0, '天気なしでも動く');
 
 // 理由

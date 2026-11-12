@@ -2,7 +2,16 @@
 // 数値の基準は config/rules.json の color にある。
 
 /** #rrggbb → { h: 0-360, s: 0-1, l: 0-1 }。 */
+const hslMemo = new Map(); // 同じ色の計算を繰り返さない
 export function hexToHsl(hex) {
+  const hit = hslMemo.get(hex);
+  if (hit) return hit;
+  const v = computeHsl(hex);
+  if (hslMemo.size < 500) hslMemo.set(hex, v);
+  return v;
+}
+
+function computeHsl(hex) {
   const n = parseInt(String(hex).replace('#', ''), 16) || 0;
   const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
   const max = Math.max(r, g, b), min = Math.min(r, g, b);

@@ -43,7 +43,6 @@
     "Ado": "casual", "らでん": "neat", "GT": "sports", "耐久": "sports", "WEC": "sports", "レプ": "casual"
   },
   "bring": {
-    "uvFrom": 6,
     "windFrom": 8,
     "event": [
       { "match": "Ado|ライブ|らでん", "items": ["チケット（スマホ）", "モバイルバッテリー"] },

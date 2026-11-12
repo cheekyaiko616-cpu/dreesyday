@@ -1,8 +1,6 @@
 // 服の写真をAIに判定してもらうための文章と、返ってきた答えの検査（純関数）。
 import { CATEGORIES, SUBS, FORMALITY } from '../config.js';
 
-const SUB_IDS = [...new Set(Object.values(SUBS).flat().map((x) => x[0]))];
-
 export const JUDGE_PROMPT = [
   '写真に写っている服を1点だけ判定し、JSONだけで答えてください。背景や影、モデルの肌は無視します。',
   `category: ${CATEGORIES.map((c) => c.id).join(' | ')}`,

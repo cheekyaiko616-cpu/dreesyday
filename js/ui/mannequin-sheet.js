@@ -19,12 +19,16 @@ export function initMannequinSheet() {
   $('#mq-close').addEventListener('click', () => hideSheet(wrap));
 }
 
+let seq = 0; // 遅れて終わった前の合成が、いまの画面を上書きしないように
+
 export async function openMannequin(fit) {
+  const mine = ++seq;
   const body = $('#mq-body');
   clear(body);
   body.append(el('p', { class: 'muted', text: '合成しています…' }));
   showSheet(wrap);
   const c = await drawMannequin(fit);
+  if (mine !== seq) return;
   const url = c.toDataURL('image/png');
   clear(body);
   body.append(

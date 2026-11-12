@@ -6,14 +6,12 @@
   --top: #ffffff;    /* ヘッダーの色 */
   --pattern: linear-gradient(180deg, rgba(240, 185, 90, .22), rgba(240, 185, 90, 0) 280px); /* 上から朝日がさすような、ごく薄い色 */
   --pattern-size: 100% 100%;
-  --status: #1a1d1b; /* 画面最上部（時計などの帯）。文字が白いので濃い色にする */
   --surface: #ffffff;
   --fg: #1a1d1b;
   --muted: #545d58;
   --line: #e3dccd;
   --ink: #1a1d1b;
   --on-ink: #ffffff;
-  --on-c: #ffffff;   /* タブカラー（--c）の上に載せる文字色。暗い表示では --c が明るい色になるので、濃い色にする */
   --danger: #b42318;
   --note-bg: #fff1cf;
   --note-fg: #5f4300;
@@ -29,7 +27,6 @@
   --sh-weak-down: 0 10px 16px -12px rgba(0, 0, 0, calc(var(--sh-a) * 1.5)); /* 細い影は、同じ濃さだと弱く見えるので、少し濃くする */
   --sh-weak-up: 0 -10px 10px -10px rgba(0, 0, 0, calc(var(--sh-a) * 1.5));
   --sh-strong: 0 6px 20px rgba(0, 0, 0, var(--sh-a));
-  --sh-side: 6px 0 18px rgba(0, 0, 0, var(--sh-a));
 
   --font-ui: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
   --font-brand: "Cormorant Garamond", "Hiragino Mincho ProN", Georgia, serif;
@@ -44,21 +41,18 @@
   --fs-xl: 28px;    /* アプリ名・ボタンの大きな記号 */
   --fs-num-s: 24px; /* 数字（複数日の日付） */
   --fs-num: 30px;   /* 数字（日付） */
-  --fs-display: 34px; /* 数字（月の帯）・起動画面の題名 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1d1b19;          /* 黒ではなく、少し青みのある落ち着いた濃い灰色 */
     --top: #1d1b19;
-    --status: #1d1b19;
     --surface: #292623;
     --fg: #e3e8ea;
     --muted: #a8b4b8;
     --line: #3a352f;
     --ink: #e3e8ea;
     --on-ink: #1d1b19;
-    --on-c: #1d1b19;
     --sh-a: .55; /* 暗い背景では、影を濃くしないと見えない */
     --pattern: linear-gradient(180deg, rgba(240, 185, 90, .10), rgba(240, 185, 90, 0) 280px); /* 上から朝日がさすような、ごく薄い色 */
     --danger: #ff8a7a;

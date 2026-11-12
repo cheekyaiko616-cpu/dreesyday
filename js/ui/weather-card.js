@@ -1,4 +1,4 @@
-// 朝ブリーフの天気カード：場所の天気（Event list と同じ絵文字と言葉）・体感・降水・紫外線・風と、1時間ごとの帯。
+// 朝ブリーフの天気カード：場所の天気（Event list と同じ絵文字と言葉）・体感・降水・風と、1時間ごとの帯。
 // 予定の会場があれば、会場の天気も1行で出す。
 import { el } from '../util/dom.js';
 import { state } from '../state.js';
@@ -37,7 +37,6 @@ export function weatherCard(date, events, onSettings) {
     el('ul', { class: 'wx-facts' },
       el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
       el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
-      el('li', null, el('small', { text: '紫外線' }), el('b', { text: String(d.uv) })),
       el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
     hoursStrip(w.home.hours, date));
   // 予定の会場の天気

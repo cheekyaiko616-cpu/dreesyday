@@ -17,7 +17,7 @@ function open() {
     try {
       const req = indexedDB.open(DB.name, DB.version);
       req.onupgradeneeded = () => STORES.forEach((s) => { if (!req.result.objectStoreNames.contains(s)) req.result.createObjectStore(s); });
-      req.onsuccess = () => { req.result.onversionchange = () => req.result.close(); finish(req.result); };
+      req.onsuccess = () => { req.result.onversionchange = () => { req.result.close(); dbp = null; }; finish(req.result); };
       req.onerror = () => finish(null);
       req.onblocked = () => { /* タイマーで見切る */ };
     } catch (e) { finish(null); }
@@ -36,6 +36,7 @@ function run(store, mode, fn) {
       const r = fn(tx.objectStore(store));
       tx.oncomplete = () => ok(r && 'result' in r ? r.result : undefined);
       tx.onerror = () => ng(tx.error);
+      tx.onabort = () => ng(tx.error || new Error('保存が中断されました'));
     });
   });
 }

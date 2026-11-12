@@ -54,12 +54,12 @@ export const itemById = (id) => state.items.find((x) => x.id === id) || null;
 
 export const newItemId = () => `i${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
-export async function saveItem(data) {
+export async function saveItem(data, { quiet = false } = {}) {
   const item = cleanItem({ ...data, id: data.id || newItemId() });
   await put('items', item.id, item);
   const i = state.items.findIndex((x) => x.id === item.id);
   if (i >= 0) state.items[i] = item; else state.items.unshift(item);
-  notify();
+  if (!quiet) notify();
   return item;
 }
 

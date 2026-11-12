@@ -60,6 +60,7 @@ export function showSheet(wrap) {
   const sh = wrap.querySelector('.sheet');
   if (sh) { sh.style.transition = ''; sh.style.transform = ''; }
   wrap.hidden = false;
+  wrap.scrollTop = 0; if (sh) sh.scrollTop = 0; // 開くたびに、いちばん上から
   if (!open.includes(wrap)) open.push(wrap);
   document.documentElement.classList.add('lock');
 }

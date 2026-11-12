@@ -1,4 +1,4 @@
-// 設定の画面（下から出る）：天気の場所・毎日の持ち物・タブごとの服装・バックアップ・学習のやり直し。
+// 設定の画面（下から出る）：項目の一覧。項目をタップすると、入力用の画面（settings-detail）が開く。
 import { $, el, clear } from '../util/dom.js';
 import { mountSheet, showSheet, hideSheet } from './sheet.js';
 import { state } from '../state.js';
@@ -13,6 +13,7 @@ import { isMemoryOnly } from '../data/db.js';
 import { geminiKey, saveGeminiKey } from '../data/gemini-key.js';
 import { locate, whereAmI } from '../services/geo.js';
 import { toast } from './toast.js';
+import { openDetail } from './settings-detail.js';
 
 const MARKUP = `
   <div class="sheet" id="st-sheet" role="dialog" aria-modal="true" aria-labelledby="st-heading">
@@ -30,13 +31,13 @@ export function initSettingsSheet() {
   $('#st-close').addEventListener('click', () => hideSheet(wrap));
 }
 
-const group = (title, ...children) => el('section', { class: 'st-group' }, el('h3', { text: title }), ...children);
+const group = (_title, ...children) => el('div', { class: 'st-group' }, ...children);
 
-function homeGroup() {
+function homeGroup(done) {
   const s = state.settings;
   const input = el('input', { type: 'text', 'aria-label': '場所の名前', placeholder: '例: 名古屋駅、豊田市', value: s.home ? s.home.name : '' });
   const msg = el('p', { class: 'hint', text: s.home ? `いまの場所：${s.home.name}` : '未設定' });
-  const set = async (home) => { await saveSettings({ home }); msg.textContent = `いまの場所：${home.name}`; loadWeather(); toast('天気の場所を設定しました'); };
+  const set = async (home) => { await saveSettings({ home }); msg.textContent = `いまの場所：${home.name}`; loadWeather(); toast('天気の場所を設定しました'); done(); };
   return group('天気の場所', msg,
     el('div', { class: 'inline-row' }, input, el('button', { type: 'button', class: 'btn', text: '探す', onclick: async () => {
       const q = input.value.trim();
@@ -55,7 +56,7 @@ function homeGroup() {
   );
 }
 
-function bodyGroup() {
+function bodyGroup(done) {
   const b = state.settings.body;
   const num = (v, label, ph, min, max, step) => el('input', { type: 'number', inputmode: 'decimal', 'aria-label': label, placeholder: ph, min, max, step, value: v || '' });
   const height = num(b.height, '身長', '例: 172', 100, 230, 0.5);
@@ -68,23 +69,23 @@ function bodyGroup() {
     row('身長 cm', height), row('体重 kg', weight), row('トップス', top), row('ウエスト inch', waist),
     el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => {
       await saveSettings({ body: { height: +height.value || 0, weight: +weight.value || 0, top: top.value, waist: +waist.value || 0 } });
-      toast('保存しました');
+      toast('保存しました'); done();
     } }));
 }
 
-function geminiGroup() {
+function geminiGroup(done) {
   const key = el('input', { type: 'password', autocomplete: 'off', 'aria-label': 'Gemini APIキー', placeholder: 'AQ.…（Google AI Studioで作成）', value: geminiKey() });
   return group('Gemini APIキー',
     key,
     el('div', { class: 'form-actions' },
-      el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveGeminiKey(key.value); toast(key.value.trim() ? 'キーを保存しました' : 'キーを消しました'); } })));
+      el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveGeminiKey(key.value); toast(key.value.trim() ? 'キーを保存しました' : 'キーを消しました'); done(); } })));
 }
 
-function dailyGroup() {
+function dailyGroup(done) {
   const ta = el('textarea', { rows: 2, 'aria-label': '毎日の持ち物' });
   ta.value = state.settings.daily.join('、');
   return group('毎日の持ち物', ta,
-    el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveSettings({ daily: ta.value.split(/[\s、,]+/) }); toast('保存しました'); } }));
+    el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveSettings({ daily: ta.value.split(/[\s、,]+/) }); toast('保存しました'); done(); } }));
 }
 
 function tabGroup() {
@@ -99,7 +100,7 @@ function tabGroup() {
     }));
 }
 
-function dataGroup() {
+function dataGroup(done) {
   const file = el('input', { type: 'file', accept: 'application/json,.json', class: 'visually-hidden', id: 'st-file' });
   const confirm = el('div', { class: 'confirm-box', hidden: true });
   file.addEventListener('change', async () => {
@@ -114,7 +115,7 @@ function dataGroup() {
           const ok = await restoreBackup(text);
           confirm.hidden = true;
           toast(ok ? '読み込みました' : 'このアプリのバックアップではありません');
-          if (ok) { loadWeather(); hideSheet(wrap); }
+          if (ok) { loadWeather(); done(); hideSheet(wrap); }
         } }),
         el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: () => { confirm.hidden = true; } })));
     file.value = '';
@@ -133,14 +134,36 @@ function dataGroup() {
     el('button', { type: 'button', class: 'btn', text: '学習をはじめからにする', onclick: async () => { await resetLearning(); toast('学習をはじめからにしました'); } }),
     __PREVIEW__ ? el('button', { type: 'button', class: 'btn', text: '見本を入れ直す（確認用）', onclick: async () => {
       await seedSamples(true);
-      hideSheet(wrap);
+      done(); hideSheet(wrap);
       toast('見本のクローゼット・コーデを入れ直しました');
     } }) : null);
+}
+
+const shorten = (t, n = 14) => (t.length > n ? `${t.slice(0, n)}…` : t);
+
+/** 一覧の1行：項目名・いまの値・›。タップで入力用の画面を開く。 */
+function row(title, value, build, refresh) {
+  const val = el('span', { class: 'st-val', text: value() });
+  const btn = el('button', { type: 'button', class: 'st-row', onclick: () => openDetail(title, (close) => build(() => { close(); refresh(); })) },
+    el('span', { class: 'st-title', text: title }), val, el('span', { class: 'st-go', text: '›', 'aria-hidden': 'true' }));
+  btn.refreshValue = () => { val.textContent = value(); };
+  return btn;
 }
 
 export function openSettings() {
   const body = $('#st-body');
   clear(body);
-  body.append(...[homeGroup(), bodyGroup(), geminiGroup(), dailyGroup(), tabGroup(), dataGroup()].filter(Boolean));
+  const rows = [];
+  const refresh = () => rows.forEach((r) => r.refreshValue());
+  const b = () => state.settings.body;
+  const tabs = [...new Set(state.calendar.items.map((x) => x.tab).filter(Boolean))];
+  rows.push(
+    row('天気の場所', () => (state.settings.home ? state.settings.home.name : '未設定'), homeGroup, refresh),
+    row('からだとサイズ', () => [b().height && `${b().height}cm`, b().top].filter(Boolean).join('・') || '未登録', bodyGroup, refresh),
+    row('毎日の持ち物', () => shorten(state.settings.daily.join('、')) || 'なし', dailyGroup, refresh),
+    row('Gemini APIキー', () => (geminiKey() ? '登録済み' : '未登録'), geminiGroup, refresh));
+  if (tabs.length) rows.push(row('タブごとの服装', () => `${tabs.length}件`, tabGroup, refresh));
+  rows.push(row('データ', () => '', dataGroup, refresh));
+  body.append(el('div', { class: 'st-list' }, rows));
   showSheet(wrap);
 }

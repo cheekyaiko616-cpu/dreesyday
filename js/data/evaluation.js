@@ -17,7 +17,7 @@ export function aiEvaluation(fit, date = todayIso(), withMeta = false) {
   const events = eventsOn(date);
   const wx = dayWeather(date, events);
   const need = formalityNeed(eventKinds(events.map((ev) => ({ formality: formalityOf(ev) }))), RULES.formality);
-  const weather = wx || { feels: 15, pop: 0, uv: 0, wind: 0 };
+  const weather = wx || { feels: 15, pop: 0, wind: 0 };
   // お気に入り（自分自身）で点が上がらないよう、favorites は渡さない
   const r = scoreOutfit(fit, { rules: RULES, adjust: state.adjust, weather, need, favorites: [] });
   const text = evaluateText(fit, r, !!wx, state.settings.body);
@@ -38,6 +38,9 @@ export async function geminiEvaluation(fit, date = todayIso()) {
 /** 保存したお気に入りの評価文を、キーがあれば裏で Gemini の文章に置き換える（失敗したらそのまま）。 */
 export async function upgradeWithGemini(f, fit, date = todayIso()) {
   if (!geminiKey()) return;
-  const r = await geminiEvaluation(fit, date);
-  if (!r.error) await saveFavorite({ ...f, ai: r.text });
+  try {
+    const r = await geminiEvaluation(fit, date);
+    const now = state.favorites.find((x) => x.id === f.id); // その間に付けた星・メモを壊さない
+    if (!r.error && now) await saveFavorite({ ...now, ai: r.text });
+  } catch (e) { console.error(e); }
 }

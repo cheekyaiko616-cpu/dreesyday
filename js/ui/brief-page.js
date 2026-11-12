@@ -21,6 +21,8 @@ import { drawMannequin } from './mannequin.js';
 import { openSettings } from './settings-sheet.js';
 import { toast } from './toast.js';
 
+let sugKey = '';      // 提案の計算結果を使い回すための印（入力が同じなら、同じ結果）
+let sugRes = null;
 let day = 0;          // 0=今日, 1=明日
 let redo = false;     // 着たコーデを「選び直す」中か
 
@@ -30,11 +32,16 @@ function dayTabs() {
   return el('div', { class: 'seg-bar' }, b(0, '今日'), b(1, '明日'));
 }
 
+let saving = false; // ☆の連打で二重に保存しない
 async function addFavorite(fit) {
-  const img = await drawMannequin(fit);
-  const saved = await saveFavorite({ items: idsOf(fit), image: img.toDataURL('image/jpeg', 0.9), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
-  upgradeWithGemini(saved, fit, addDaysIso(todayIso(), day));
-  toast('お気に入りに保存しました（AI評価つき。メモはお気に入り画面で足せます）');
+  if (saving) return;
+  saving = true;
+  try {
+    const img = await drawMannequin(fit);
+    const saved = await saveFavorite({ items: idsOf(fit), image: img.toDataURL('image/jpeg', 0.9), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
+    upgradeWithGemini(saved, fit, addDaysIso(todayIso(), day));
+    toast('お気に入りに保存しました（AI評価つき。メモはお気に入り画面で足せます）');
+  } finally { saving = false; }
 }
 
 function outfitSection(date, events, wx) {
@@ -43,7 +50,10 @@ function outfitSection(date, events, wx) {
   const box = el('section', { class: 'sect' }, el('h2', { class: 'sect-title', text: 'コーデの提案' }));
   if (!wx) { box.append(el('p', { class: 'muted card', text: '天気が読めないため、提案を出せません' })); return box; }
   const kinds = events.map((ev) => ({ formality: formalityOf(ev) }));
-  const res = suggest({ items: state.items, weather: wx, events: kinds, adjust: state.adjust, favorites: state.favorites }, RULES);
+  // 入力（手持ち・学習・お気に入りの中身・天気・予定）が同じなら、前回の計算結果を使う
+  const key = JSON.stringify([state.items, state.adjust, state.favorites.map((f) => f.items), wx, kinds]);
+  if (key !== sugKey) { sugRes = suggest({ items: state.items, weather: wx, events: kinds, adjust: state.adjust, favorites: state.favorites }, RULES); sugKey = key; }
+  const res = sugRes;
   if (res.note) box.append(el('p', { class: 'note', text: res.note }));
   res.outfits.forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),

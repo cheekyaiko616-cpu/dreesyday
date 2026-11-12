@@ -29,13 +29,11 @@ function accessoriesFor(acc, weather, R) {
   const out = [];
   const umb = acc.find((a) => a.sub_category === 'umbrella');
   if (umb && weather.pop >= R.rain.foldingUmbrellaFrom) out.push(umb);
-  const hat = acc.find((a) => a.sub_category === 'hat');
-  if (hat && weather.uv >= R.bring.uvFrom) out.push(hat);
   return out;
 }
 
 /**
- * items: 手持ち。weather: { feels, pop, uv, wind }。events: [{ formality }]。adjust: 学習の補正。favorites: お気に入り。
+ * items: 手持ち。weather: { feels, pop, wind }。events: [{ formality }]。adjust: 学習の補正。favorites: お気に入り。
  * 返す: { has_events, outfits: [{ rank, items, reason, score, color_summary, key }], note }
  */
 export function suggest({ items, weather, events, adjust, favorites }, R) {

@@ -32,7 +32,7 @@ export async function loadWeather() {
 
 /**
  * その日の服装用の天気（自宅と会場のうち、厳しいほう）。無ければ null。
- * 返す: { feels, pop, uv, wind, code, max, min, from: ['自宅', '会場名'] }
+ * 返す: { feels, pop, wind, code, max, min, from: ['自宅', '会場名'] }
  */
 export function dayWeather(date, events) {
   const list = [];
@@ -46,7 +46,6 @@ export function dayWeather(date, events) {
   return {
     feels: Math.min(...list.map((x) => daytimeFeels(x.d))),
     pop: Math.max(...list.map((x) => x.d.pop)),
-    uv: Math.max(...list.map((x) => x.d.uv)),
     wind: Math.max(...list.map((x) => x.d.wind)),
     code: pickCold.d.code, max: pickCold.d.max, min: pickCold.d.min,
     from: list.map((x) => x.name)

@@ -59,3 +59,4 @@ Event list と同じ `cheekyaiko616-cpu.github.io` の中なので、`calendar.j
 - `js/engine/evaluate.js` / `js/data/evaluation.js`: お気に入りの「AI評価」文章（アプリ内の判定。通信なし）
 - `js/services/gemini.js` / `js/engine/gemini-prompt.js` / `js/data/gemini-key.js`: Geminiで評価文を作る（キーは端末内のみ。設定画面で入力）
 - `js/engine/item-judge.js` / `js/data/item-judge.js`: 服の写真をGeminiで判定（種類・色・名前・暖かさなど）
+- `js/ui/settings-detail.js`: 設定の項目をタップして開く入力用の画面

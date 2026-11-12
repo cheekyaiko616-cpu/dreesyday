@@ -48,7 +48,13 @@ for (let i = 0; i < 65536; i++) {
   h2f[i] = e === 0 ? s * m * 2 ** -24 : s * (1 + m / 1024) * 2 ** (e - 15);
 }
 
+let glOk = null; // 対応しているかは1回だけ調べる
 export function glAvailable() {
+  if (glOk === null) glOk = probeGL();
+  return glOk;
+}
+
+function probeGL() {
   try {
     const c = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(1, 1) : document.createElement('canvas');
     const gl = c.getContext('webgl2');
