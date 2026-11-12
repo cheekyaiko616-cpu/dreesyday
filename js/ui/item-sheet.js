@@ -126,15 +126,19 @@ export function openItemSheet(item) {
     toast('保存しました');
   } });
   const actions = [save, el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: () => hideSheet(wrap) })];
+  // 削除は、下に固定したボタンの場所で確認する（スクロール不要）
+  const bar = el('div', { class: 'form-actions sticky' });
+  const showActions = () => { clear(bar); bar.append(...actions); };
   if (item) {
-    const confirm = el('div', { class: 'confirm-box', hidden: true },
-      el('p', { text: 'このアイテムを削除しますか？' }),
-      el('div', { class: 'form-actions' },
+    const askDelete = () => {
+      clear(bar);
+      bar.append(el('span', { class: 'confirm-text', text: 'このアイテムを削除しますか？' }),
         el('button', { type: 'button', class: 'btn danger grow', text: '削除する', onclick: async () => { await removeItem(item.id); hideSheet(wrap); toast('削除しました'); } }),
-        el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: () => { confirm.hidden = true; } })));
-    body.append(confirm);
-    actions.push(el('button', { type: 'button', class: 'btn ghost-danger', text: '削除', onclick: () => { confirm.hidden = false; } }));
+        el('button', { type: 'button', class: 'btn', text: 'やめる', onclick: showActions }));
+    };
+    actions.push(el('button', { type: 'button', class: 'btn ghost-danger', text: '削除', onclick: askDelete }));
   }
+  showActions();
 
   body.prepend(
     el('div', { class: 'it-top' }, preview, el('label', { class: 'btn', for: 'it-file', text: item && item.hasPhoto ? '写真を変える' : '写真を選ぶ' }), aiBtn, file),
@@ -149,6 +153,6 @@ export function openItemSheet(item) {
     field('サイズ（S/M/L や 32 など。空でもOK）', sizeInput),
     el('label', { class: 'check' }, rain, '雨に強い（撥水・防水）'),
     field('状態', status),
-    el('div', { class: 'form-actions sticky' }, actions));
+    bar);
   showSheet(wrap);
 }

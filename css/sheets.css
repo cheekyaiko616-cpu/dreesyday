@@ -57,3 +57,5 @@
 .star-row { display: flex; gap: var(--sp-1); }
 .star { min-width: 44px; min-height: 44px; border: 0; background: none; color: var(--muted); font-size: 26px; }
 .star.on { color: #b7791f; }
+
+.confirm-text { flex: 1 0 100%; font-weight: 600; }
