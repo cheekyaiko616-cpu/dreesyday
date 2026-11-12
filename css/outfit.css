@@ -30,7 +30,6 @@
 .balance-legend { display: flex; flex-wrap: wrap; gap: 2px var(--sp-3); margin-top: var(--sp-2); font-size: var(--fs-cap); color: var(--muted); }
 .balance-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border: 1px solid var(--line); border-radius: 50%; vertical-align: -1px; }
 
-.mq-img { display: block; width: 100%; max-width: 360px; margin: var(--sp-3) auto 0; border-radius: var(--r-m); border: 1px solid var(--line); }
 
 .flatlay { margin: var(--sp-3) 0 0; border-radius: var(--r-l); background: linear-gradient(#f6f4f0, #eae6df); padding: var(--sp-2); }
 .flatlay-img { display: block; width: 100%; height: auto; min-height: 120px; }

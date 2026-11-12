@@ -1,5 +1,5 @@
 // 見本のデータを入れる（Claude上・手元のファイルで開いたときだけ。github.io の本番では入れない）。
-// クローゼット（実際の服の写真つき）・お気に入りのコーデ（マネキン画像つき）・着た記録と評価をまとめて入れる。
+// クローゼット（実際の服の写真つき）・お気に入りのコーデ・着た記録と評価をまとめて入れる。
 import { state } from '../state.js';
 import { put, get, clearStore } from '../data/db.js';
 import { importImages } from '../data/images.js';
@@ -12,7 +12,6 @@ import { RULES } from '../data/rules.js';
 import { applyFeedback, emptyAdjust } from '../engine/feedback.js';
 import { SAMPLE_PHOTOS } from '../data/sample-images.js';
 import { SAMPLE_CUTS } from '../data/sample-cuts.js';
-import { drawMannequin } from './mannequin.js';
 
 /** 見本を入れる。replace=true なら、今のアイテム・お気に入り・学習を消してから入れる。 */
 export async function seedSamples(replace = false) {
@@ -27,8 +26,7 @@ export async function seedSamples(replace = false) {
   if (!state.settings.body.height) await saveSettings({ body: { height: 172, weight: 62, top: 'M', waist: 30 } }); // 確認用の体型
   await loadItems();
   for (const f of sampleFavorites()) {
-    const img = await drawMannequin(fitOf(f.items));
-    await put('favorites', f.id, { ...f, image: img.toDataURL('image/jpeg', 0.9), createdAt: new Date().toISOString() });
+    await put('favorites', f.id, { ...f, createdAt: new Date().toISOString() });
   }
   // 着た記録と、評価から学習した補正
   const wears = sampleWears().map((w) => ({ ...w, key: '', at: new Date().toISOString() }));

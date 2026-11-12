@@ -17,7 +17,6 @@ import { renderBuilder } from './ui/builder-page.js';
 import { renderFavorites } from './ui/favorites-page.js';
 import { initItemSheet } from './ui/item-sheet.js';
 import { initFavSheet } from './ui/fav-sheet.js';
-import { initMannequinSheet } from './ui/mannequin-sheet.js';
 import { initSettingsSheet } from './ui/settings-sheet.js';
 import { initSettingsDetail } from './ui/settings-detail.js';
 import { todayIso } from './util/date.js';
@@ -37,7 +36,6 @@ async function start() {
   initShell();
   initItemSheet();
   initFavSheet();
-  initMannequinSheet();
   initSettingsSheet();
   initSettingsDetail();
   try { // 読み込みに失敗しても、画面は出す（空の状態で動く）

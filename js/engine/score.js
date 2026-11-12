@@ -83,9 +83,13 @@ export function scoreOutfit(o, ctx) {
   const color_items = items.length ? items.reduce((a, it) => a + itemColorScore(it, R.color), 0) / items.length : 1;
   const tc = totalColorScore(outfitHexes(o), R.color);
 
-  const W = weather.pop >= R.rain.popThreshold ? { ...R.weights, rain: R.rain.rainyWeight } : R.weights; // 雨の日は雨を重く見る
-  const wsum = W.warmth + W.rain + W.formality + W.color_items + W.color_total;
-  let total = (W.warmth * warmth + W.rain * rain + W.formality * formality + W.color_items * color_items + W.color_total * tc.score) / wsum;
+  const rainy = weather.pop >= R.rain.popThreshold;
+  const W = rainy ? { ...R.weights, rain: R.rain.rainyWeight } : { ...R.weights, rain: 0 }; // 雨の日だけ雨を見る（降らない日に満点が混ざって甘くならないように）
+  const parts = [['warmth', warmth], ['rain', rain], ['formality', formality], ['color_items', color_items], ['color_total', tc.score]].filter(([k]) => W[k] > 0);
+  const wsum = parts.reduce((a, [k]) => a + W[k], 0);
+  const avg = parts.reduce((a, [k, v]) => a + W[k] * v, 0) / wsum;
+  const weakest = Math.min(...parts.map(([, v]) => v)); // ひとつでも合わない所があれば、全体の点も下げる
+  let total = (1 - R.strict.weakest) * avg + R.strict.weakest * weakest;
 
   // 学習した補正：アイテムの好み・色の相性・この組み合わせの重み
   const itemDelta = items.reduce((a, it) => a + ((adjust.items[it.id] || {}).score || 0), 0) / Math.max(1, items.length);

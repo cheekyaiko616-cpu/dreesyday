@@ -4,7 +4,7 @@
   "warmth": {
     "_説明": "体感温度(日中)ごとの、コーデ全体の暖かさの目安。全体 = トップス + ボトムス×0.5 + アウター",
     "bottomsFactor": 0.5,
-    "tolerance": 3,
+    "tolerance": 2.5,
     "bands": [
       { "min": 25, "target": 2, "outer": "none" },
       { "min": 20, "target": 3.5, "outer": "optional" },
@@ -16,7 +16,7 @@
     "noOuterPenalty": 0.6,
     "heavyOuterPenalty": 0.5
   },
-  "rain": { "_説明": "降水確率が popThreshold 以上の日は、雨の重みを rainyWeight に上げる（雨に強い上着・靴を優先）", "popThreshold": 50, "rainyWeight": 0.4, "foldingUmbrellaFrom": 30, "noOuterScore": 0.6, "notRainOkScore": 0.3 },
+  "rain": { "_説明": "降水確率が popThreshold 以上の日は、雨の重みを rainyWeight に上げる（雨に強い上着・靴を優先）", "popThreshold": 50, "rainyWeight": 0.4, "foldingUmbrellaFrom": 30, "noOuterScore": 0.6, "notRainOkScore": 0.2 },
   "formality": {
     "_説明": "予定の服装の種類 → 必要な最低ライン(0=カジュアル,1=きれいめ,2=フォーマル)。sports はカジュアル寄りを高く評価",
     "level": { "casual": 0, "neat": 1, "formal": 2 },
@@ -32,9 +32,10 @@
     "mergeDeg": 20,
     "analogousDeg": 30,
     "complementTol": 30,
-    "item": { "single": 1, "analogous": 0.9, "complement": 0.85, "other": 0.55 },
-    "total": { "none": 0.85, "one": 1, "analogous": 0.9, "complement": 0.85, "two_other": 0.55, "many": 0.3, "many_neutral": 0.45 }
+    "item": { "single": 1, "analogous": 0.9, "complement": 0.85, "other": 0.45 },
+    "total": { "none": 1, "one": 1, "analogous": 0.9, "complement": 0.85, "two_other": 0.4, "many": 0.2, "many_neutral": 0.35 }
   },
+  "strict": { "_説明": "いちばん低い項目の点数を、総合点にどれだけ反映するか（0〜1）。ひとつでも合わない所があれば、全体の点も下がる", "weakest": 0.4 },
   "favoriteBonus": 0.05,
   "suggest": { "withEvents": 3, "noEvents": 2, "maxShared": 2, "prefilter": 8 },
   "feedback": { "warmthStep": 0.5, "colorMismatch": -0.1, "good": 0.05, "goodProposal": 0.02, "bad": -0.05, "clip": 0.5, "warmthClip": 1.0 },

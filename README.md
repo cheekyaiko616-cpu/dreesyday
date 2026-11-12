@@ -20,10 +20,9 @@
 | 朝ブリーフ画面 | `js/ui/brief-page.js` / `js/ui/weather-card.js` / `js/ui/events-card.js` / `js/ui/bring-card.js` / `js/ui/feedback-card.js` |
 | コーデのカード・色相環・色のバランス・アイテムの絵 | `js/ui/outfit-card.js` / `js/ui/hue-wheel.js` / `js/ui/color-balance.js` / `js/ui/thumb.js` |
 | 背景の切り抜き（端末内。U²-Net-p を WebGL2 で実行／使えない端末は簡易版）と、その後処理 | `js/services/cutout.js` / `js/services/u2net-gl.js` / `js/services/mask.js` / `js/services/ensure-cut.js` / `models/u2netp.*` |
-| 服の形を測って置き場所を決める／体型とサイズ感／平置きの配置（計算だけ） | `js/engine/layout.js` / `js/engine/fit.js` / `js/engine/flatlay.js` |
+| 体型とサイズ感／平置きの配置（計算だけ） | `js/engine/fit.js` / `js/engine/flatlay.js` |
 | 画像の保存と取り出し（写真・一覧用の小さな写真・切り抜き（色JPEG＋透明度PNG）を別の保存棚 images にバイト列で入れ、使うときだけ読む） | `js/data/images.js` |
 | 切り抜いた服だけの平置き画像（コーデ提案カード） | `js/ui/flatlay.js` |
-| マネキンへの重ね着の描画（重ね順・影・体） | `js/ui/mannequin.js` / `js/ui/mannequin-sheet.js` |
 | クローゼット・アイテムの編集 | `js/ui/closet-page.js` / `js/ui/item-sheet.js` |
 | コーデ作成（自分で選ぶ） | `js/ui/builder-page.js` |
 | お気に入り | `js/ui/favorites-page.js` / `js/ui/fav-sheet.js` |

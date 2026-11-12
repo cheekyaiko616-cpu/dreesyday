@@ -172,7 +172,7 @@ export function cutCanvas(id) {
   return remember('cut', id, p);
 }
 
-/** 写真を Image で（切り抜きの生成・マネキンの代用に使う）。 */
+/** 写真を Image で（切り抜きの生成に使う）。 */
 export async function photoImage(id) {
   if (imgMemo.has(id)) return imgMemo.get(id);
   const url = await photoURL(id);

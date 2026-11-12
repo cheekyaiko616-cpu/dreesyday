@@ -1,4 +1,4 @@
-// お気に入り画面：組み合わせ・マネキン画像・評価（星）・メモ・タグ。タグで絞り込める。
+// お気に入り画面：組み合わせ・評価（星）・メモ・タグ。タグで絞り込める。
 import { el, clear } from '../util/dom.js';
 import { state, notify } from '../state.js';
 import { fitOf, chooseOutfit } from '../data/learning.js';
@@ -40,7 +40,6 @@ export function renderFavorites(root) {
     }
     root.append(el('article', { class: 'card fav' },
       el('div', { class: 'fav-main' },
-        f.image ? el('img', { class: 'fav-img', src: f.image, alt: 'マネキンに重ねたコーデ' }) : null,
         el('div', { class: 'fav-info' },
           el('p', { class: 'stars', 'aria-label': `評価 ${f.stars}`, text: '★'.repeat(f.stars) + '☆'.repeat(5 - f.stars) }),
           f.ai ? el('p', { class: 'fav-ai', text: f.ai }) : null,

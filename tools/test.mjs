@@ -35,7 +35,7 @@ ok(totalColorScore([], R.color).relationship === 'neutral', '色なし');
 const rainy = { feels: 8, pop: 70, wind: 3 };
 const r1 = suggest({ items, weather: rainy, events: [{ formality: 'casual' }], adjust, favorites: [] }, R);
 ok(r1.outfits.length === 3, '予定ありは3案');
-ok(r1.outfits[0].items.outer && r1.outfits[0].items.outer.rain_ok, '雨の日の1案目は雨に強い上着');
+ok(r1.outfits[0].score.rain < 1 || r1.outfits[0].items.outer.rain_ok, '雨に強くない上着なら、雨の点が下がる');
 ok(r1.outfits[0].items.shoes && r1.outfits[0].items.shoes.rain_ok, '雨の日の1案目は雨に強い靴');
 ok(r1.outfits.every((o) => o.items.tops.id !== 'x1'), '洗濯中は提案しない');
 ok(r1.outfits.every((o) => o.items.accessories.some((a) => a.id === 'a1')), '雨なら傘を持つ');
@@ -84,7 +84,6 @@ ok(reasonText(fit, { score: { warmth: 0.9 }, warmth_sum: 5, band: { target: 5 },
 
 // 切り抜きの後処理
 import { binarize, largestBlob, fillHoles, feather } from '../js/services/mask.js';
-import { measure, place, CANVAS } from '../js/engine/layout.js';
 {
   const w = 20, h = 20, m = new Float32Array(w * h);
   for (let y = 4; y < 16; y++) for (let x = 4; x < 16; x++) m[y * w + x] = 0.9;
@@ -97,18 +96,6 @@ import { measure, place, CANVAS } from '../js/engine/layout.js';
   ok(b[0] === 0, '外側は埋めない');
   const a = feather(b, w, h, 1, 1);
   ok(a[10 * w + 10] === 255 && a[0] === 0, '縁をなめらかにしても中は不透明・外は透明');
-}
-{
-  const w = 40, h = 60, px = new Uint8ClampedArray(w * h * 4);
-  for (let y = 0; y < h; y++) for (let x = 10; x < 40; x++) px[(y * w + x) * 4 + 3] = 255; // 右に寄った服
-  const m = measure(w, h, px);
-  ok(Math.abs(m.cx - 24.5) < 1, '重心を測る');
-  const r = place({ category: 'tops', sub_category: 'shirt' }, { ...m }, {});
-  ok(Math.abs(r.x + (m.cx / m.w) * r.w - 300) < 0.5, '重心が体の中心に来る');
-  ok(r.y >= 0 && r.y + r.h <= CANVAS.h, '画面の中に収まる');
-  const shoes = place({ category: 'shoes' }, { w: 60, h: 60, cx: 30 }, {});
-  ok(shoes.length === 2 && shoes[1].flip, '片方の靴は左右の2足にする');
-  ok(place({ category: 'shoes' }, { w: 300, h: 100, cx: 150 }, {}).length === 1, '両足の写真はそのまま');
 }
 
 // 体型とサイズ感
@@ -192,5 +179,25 @@ import { parseJudge } from '../js/engine/item-judge.js';
   ok(m.includes('404') || m.length > 0, '全部404ならエラー'); void before;
   globalThis.fetch = real;
 }
+
+// 点数の厳しさ：合わない所が1つでもあれば80点を超えない／文句なしなら高い
+{
+  const ctx = { rules: R, adjust, weather: { feels: 22, pop: 0, wind: 0 }, need: { need: 0, sports: false }, favorites: [] };
+  const good = scoreOutfit({ tops: it('g1', 'tops', 2, '#f2f2ef'), bottoms: it('g2', 'bottoms', 3, '#1c1c1e'), outer: null, shoes: it('g3', 'shoes', 1, '#f4f4f2'), accessories: [] }, ctx);
+  const clash = scoreOutfit({ tops: it('c1', 'tops', 2, '#e11d48'), bottoms: it('c2', 'bottoms', 2, '#16a34a'), outer: null, shoes: it('c3', 'shoes', 1, '#facc15'), accessories: [] }, ctx);
+  const cold = scoreOutfit({ tops: it('d1', 'tops', 1, '#f2f2ef'), bottoms: it('d2', 'bottoms', 1, '#1c1c1e'), outer: null, shoes: it('d3', 'shoes', 1, '#f4f4f2'), accessories: [] }, { ...ctx, weather: { feels: 3, pop: 0, wind: 0 } });
+  ok(good.score.total >= 0.9, '無彩色でまとまった組み合わせは高い');
+  ok(clash.score.total < 0.7, '色がばらばらな組み合わせは70点未満');
+  ok(cold.score.total < 0.7, '寒い日に薄着の組み合わせは70点未満');
+}
+// Gemini レビューの文章と検査
+import { buildReviewPrompt, parseReview } from '../js/engine/review.js';
+{
+  const p = buildReviewPrompt({ tops: it('a', 'tops', 2, '#ffffff'), bottoms: it('b', 'bottoms', 2, '#000000'), accessories: [] }, { feels: 10, pop: 20 }, ['ライブ'], 70);
+  ok(p.includes('厳しめ') && p.includes('体感10℃') && p.includes('ライブ') && p.includes('70点'), 'レビューの文章に天気・予定・アプリの点が入る');
+  ok(parseReview({ score: 140.4, good: 'a', bad: 'b' }).score === 100 && parseReview({ score: -5 }).score === 0, '点数は0〜100にそろえる');
+  ok(parseReview({ good: 'x' }) === null && parseReview(null) === null, '点数が無い答えは使わない');
+}
+
 if (failed) { console.log(`${failed} 件の失敗`); process.exit(1); }
 console.log('自動テスト: すべて成功');

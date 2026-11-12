@@ -24,7 +24,6 @@ h1, h2, h3, p { margin: 0; }
   background: var(--top); box-shadow: var(--sh-weak-down);
 }
 .brand { font-family: var(--font-brand); font-style: italic; font-weight: 600; font-size: var(--fs-xl); line-height: 1.1; letter-spacing: .01em; }
-.icon-btn { min-width: 44px; min-height: 44px; border: 0; background: none; font-size: var(--fs-xl); color: var(--muted); }
 
 /* 中身 */
 #app-main { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
@@ -37,12 +36,13 @@ h1, h2, h3, p { margin: 0; }
 /* 下の切り替えボタン */
 #app-nav {
   z-index: 6;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   padding: var(--sp-1) var(--sp-2) calc(env(safe-area-inset-bottom, 0px) + var(--sp-1));
   background: var(--top); box-shadow: var(--sh-weak-up);
 }
-.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 0; min-height: 52px; border: 0; background: none; color: var(--muted); font-size: 12px; white-space: nowrap; }
-.nav-btn .nav-i { font-size: 20px; line-height: 1.3; }
+.nav-btn { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 0; background: none; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.nav-btn .nav-i { display: flex; }
+.nav-btn.on svg { stroke-width: 2.3; }
 .nav-btn.on { color: var(--fg); font-weight: 600; }
 
 /* ボタン */

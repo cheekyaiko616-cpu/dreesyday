@@ -21,7 +21,6 @@
 .judge .note { margin-bottom: var(--sp-2); }
 
 .fav-main { display: flex; gap: var(--sp-3); }
-.fav-img { width: 120px; flex: none; border-radius: var(--r-m); border: 1px solid var(--line); }
 .fav-info { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
 .stars { color: #b7791f; font-size: var(--fs-lg); letter-spacing: 2px; }
 .fav-memo { font-size: var(--fs-sm); overflow-wrap: anywhere; }
@@ -29,3 +28,5 @@
 
 .fav-ai, .ai-memo { margin: 0; font-size: var(--fs-sm); line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; color: var(--text); }
 .ai-memo { padding: var(--sp-2) var(--sp-3); border-radius: var(--r-m); background: var(--surface-2, #f1efe9); }
+.review { margin-top: var(--sp-3); padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--fs-sm); }
+.review .card-title { margin: 0; }

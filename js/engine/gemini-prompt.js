@@ -7,7 +7,7 @@ export function buildPrompt(fit, ruleText, weather, eventNames) {
   const wx = weather ? `体感${Math.round(weather.feels)}℃、降水確率${Math.round(weather.pop)}%` : '天気は不明';
   return [
     'あなたは親しみやすいスタイリストです。次の服の組み合わせを評価して、日本語で3〜4文の短い評価文を書いてください。',
-    'よい点を先に、気をつける点は最後に1つだけ。専門用語は使わず、箇条書きや見出しは使わないでください。',
+    'お世辞は言わず、合っていない所ははっきり伝える。よい点を先に、気をつける点は最後に。専門用語は使わず、箇条書きや見出しは使わないでください。',
     '', '【コーデ】', ...rows, '', `【その日】${wx}${eventNames && eventNames.length ? '、予定: ' + eventNames.slice(0, 3).join('、') : ''}`,
     '', '【アプリの採点結果（参考）】', ruleText
   ].join('\n');

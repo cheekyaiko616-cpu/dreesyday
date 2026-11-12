@@ -16,8 +16,6 @@ import { eventsCard } from './events-card.js';
 import { bringCard } from './bring-card.js';
 import { feedbackCard } from './feedback-card.js';
 import { outfitCard } from './outfit-card.js';
-import { openMannequin } from './mannequin-sheet.js';
-import { drawMannequin } from './mannequin.js';
 import { openSettings } from './settings-sheet.js';
 import { toast } from './toast.js';
 
@@ -37,8 +35,7 @@ async function addFavorite(fit) {
   if (saving) return;
   saving = true;
   try {
-    const img = await drawMannequin(fit);
-    const saved = await saveFavorite({ items: idsOf(fit), image: img.toDataURL('image/jpeg', 0.9), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
+    const saved = await saveFavorite({ items: idsOf(fit), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
     upgradeWithGemini(saved, fit, addDaysIso(todayIso(), day));
     toast('お気に入りに保存しました（AI評価つき。メモはお気に入り画面で足せます）');
   } finally { saving = false; }
@@ -57,7 +54,6 @@ function outfitSection(date, events, wx) {
   if (res.note) box.append(el('p', { class: 'note', text: res.note }));
   res.outfits.forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),
-    el('button', { type: 'button', class: 'btn', text: 'マネキン', onclick: () => openMannequin(o.items) }),
     el('button', { type: 'button', class: 'btn', text: '☆ 保存', 'aria-label': 'お気に入りに保存', onclick: () => addFavorite(o.items) })
   ])));
   return box;

@@ -1,4 +1,4 @@
-// お気に入りのコーデ（組み合わせ・マネキン画像・評価・メモ・タグ）。
+// お気に入りのコーデ（組み合わせ・評価・メモ・タグ）。
 import { state, notify } from '../state.js';
 import { getAll, put, del } from './db.js';
 
@@ -19,7 +19,6 @@ function clean(f) {
   items.accessories = f.items && Array.isArray(f.items.accessories) ? f.items.accessories.filter((x) => typeof x === 'string') : [];
   return {
     id: f.id, items,
-    image: typeof f.image === 'string' && f.image.startsWith('data:image/') ? f.image : '',
     stars: Math.max(0, Math.min(5, Math.round(+f.stars || 0))),
     ai: String(f.ai || '').slice(0, 600), // AI評価（アプリ内の判定が書く）
     memo: String(f.memo || '').slice(0, 300), // 自分のメモ
