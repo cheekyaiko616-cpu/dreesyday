@@ -48,6 +48,6 @@ export function outfitCard(o, actions, open = false, review = null) {
       o.rank ? el('span', { class: 'rank', text: `案${o.rank}` }) : null,
       el('p', { class: 'reason', text: o.reason })),
     flatlayEl(o.items), fitNames(o.items),
-    review ? review((n) => { summary.textContent = `点数 ${n}　色と内訳を見る`; }) : null, more,
+    review ? review((n) => { summary.textContent = `点数 ${n}（Gemini）　色を見る`; more.classList.add('gemini'); }) : null, more,
     actions && actions.length ? el('div', { class: 'actions' }, actions) : null);
 }

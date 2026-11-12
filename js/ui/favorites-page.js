@@ -43,6 +43,7 @@ export function renderFavorites(root) {
         el('div', { class: 'fav-info' },
           el('p', { class: 'stars', 'aria-label': `評価 ${f.stars}`, text: '★'.repeat(f.stars) + '☆'.repeat(5 - f.stars) }),
           f.ai ? el('p', { class: 'fav-ai', text: f.ai }) : null,
+          f.review ? el('p', { class: 'fav-ai', text: `Gemini ${f.review.score}点：${[f.review.color, f.review.bad || f.review.good].filter(Boolean).join(' ')}` }) : null,
           f.memo ? el('p', { class: 'fav-memo', text: `メモ: ${f.memo}` }) : null,
           f.tags.length ? el('p', { class: 'fav-tags', text: f.tags.map((t) => `#${t}`).join(' ') }) : null)),
       fitRow(fit), colorViz(fit),

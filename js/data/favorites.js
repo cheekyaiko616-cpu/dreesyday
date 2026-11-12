@@ -1,6 +1,7 @@
 // お気に入りのコーデ（組み合わせ・評価・メモ・タグ）。
 import { state, notify } from '../state.js';
 import { getAll, put, del } from './db.js';
+import { cleanReview } from './review-store.js';
 
 const SLOTS = ['tops', 'bottoms', 'outer', 'shoes'];
 
@@ -21,6 +22,7 @@ function clean(f) {
     id: f.id, items,
     stars: Math.max(0, Math.min(5, Math.round(+f.stars || 0))),
     ai: String(f.ai || '').slice(0, 600), // AI評価（アプリ内の判定が書く）
+    review: f.review ? cleanReview(f.review) : null, // 登録したときのGeminiレビュー（その後の再評価では変わらない）
     memo: String(f.memo || '').slice(0, 300), // 自分のメモ
     tags: (Array.isArray(f.tags) ? f.tags : []).map((t) => String(t).trim().slice(0, 20)).filter(Boolean).slice(0, 10),
     createdAt: String(f.createdAt || new Date().toISOString()).slice(0, 30)

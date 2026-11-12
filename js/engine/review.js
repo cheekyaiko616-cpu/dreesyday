@@ -15,6 +15,7 @@ export function buildReviewPrompt(fit, weather, eventNames, appScore) {
     'score: 0〜100の整数',
     'good: よい点を1文（なければ空文字）',
     'bad: 気になる点・合っていない点を1〜2文。専門用語は使わず、具体的に',
+    'color: 色の合わせ方（色味・全体のバランス・季節感）の評価を1文',
     'fix: 直すならどうするかを1文（直す所がなければ空文字）',
     '', '【コーデ】', ...rows, '', `【その日】${wx}${ev}`, '', `【アプリの採点（参考。納得できなければ変えてよい）】${appScore}点`
   ].join('\n');
@@ -24,5 +25,5 @@ export function buildReviewPrompt(fit, weather, eventNames, appScore) {
 export function parseReview(o) {
   if (!o || typeof o !== 'object' || !Number.isFinite(+o.score)) return null;
   const t = (v) => (typeof v === 'string' ? v.trim().slice(0, 200) : '');
-  return { score: Math.max(0, Math.min(100, Math.round(+o.score))), good: t(o.good), bad: t(o.bad), fix: t(o.fix) };
+  return { score: Math.max(0, Math.min(100, Math.round(+o.score))), good: t(o.good), bad: t(o.bad), color: t(o.color), fix: t(o.fix) };
 }

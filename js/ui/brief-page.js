@@ -19,6 +19,7 @@ import { outfitCard } from './outfit-card.js';
 import { openSettings } from './settings-sheet.js';
 import { toast } from './toast.js';
 import { reviewBox } from './review-box.js';
+import { getReview } from '../data/review-store.js';
 
 let sugKey = '';      // 提案の計算結果を使い回すための印（入力が同じなら、同じ結果）
 let sugRes = null;
@@ -36,7 +37,7 @@ async function addFavorite(fit) {
   if (saving) return;
   saving = true;
   try {
-    const saved = await saveFavorite({ items: idsOf(fit), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
+    const saved = await saveFavorite({ items: idsOf(fit), review: getReview(fit), ai: aiEvaluation(fit, addDaysIso(todayIso(), day)) });
     upgradeWithGemini(saved, fit, addDaysIso(todayIso(), day));
     toast('お気に入りに保存しました（AI評価つき。メモはお気に入り画面で足せます）');
   } finally { saving = false; }

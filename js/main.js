@@ -6,6 +6,7 @@ import { loadSettings } from './data/settings.js';
 import { loadItems } from './data/closet.js';
 import { loadFavorites } from './data/favorites.js';
 import { loadGeminiKey } from './data/gemini-key.js';
+import { loadReviews } from './data/review-store.js';
 import { loadLearning } from './data/learning.js';
 import { loadChecks } from './data/checklist.js';
 import { loadCalendar } from './data/calendar-feed.js';
@@ -39,7 +40,7 @@ async function start() {
   initSettingsSheet();
   initSettingsDetail();
   try { // 読み込みに失敗しても、画面は出す（空の状態で動く）
-    await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey()]);
+    await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey(), loadReviews()]);
   } catch (e) { console.error(e); }
   if (__PREVIEW__) { try { await seedIfNeeded(); } catch (e) { console.error(e); } } // 確認用：クローゼット・コーデの見本（本番では入れない）
   state.ready = true;

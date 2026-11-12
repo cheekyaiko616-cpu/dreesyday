@@ -16,6 +16,7 @@ import { thumbEl, itemName } from './thumb.js';
 import { scoreBars, colorViz } from './outfit-card.js';
 import { toast } from './toast.js';
 import { reviewBox } from './review-box.js';
+import { getReview } from '../data/review-store.js';
 
 const SLOTS = [['outer', 'アウター', true], ['tops', 'トップス', false], ['bottoms', 'ボトムス', false], ['shoes', 'シューズ', true], ['accessory', '小物', true]];
 
@@ -76,7 +77,7 @@ export function renderBuilder(root) {
     result.append(...[
       el('h2', { class: 'card-title', text: '判定（今日の天気・予定で）' }),
       low.length ? el('p', { class: 'note', text: `予定に対して、くだけすぎのアイテムがあります：${low.map(itemName).join('、')}` }) : null,
-      scoreBars(r.score), colorViz(fit), reviewBox(fit, wx, events, appScore, (n) => { scoreB.textContent = String(n); }),
+      scoreBars(r.score), colorViz(fit), reviewBox(fit, wx, events, appScore, (n) => { scoreB.textContent = String(n); result.classList.add('gemini'); }),
       el('div', { class: 'actions' },
         el('button', { type: 'button', class: 'btn solid', text: '今日はこれを着る', onclick: async () => { await chooseOutfit(date, fit, 'self'); toast('今日のコーデにしました'); } }),
         el('button', { type: 'button', class: 'btn', text: '☆ 保存', onclick: async (e) => {
@@ -84,7 +85,7 @@ export function renderBuilder(root) {
           if (btn.disabled) return;
           btn.disabled = true; // 連打で二重に保存しない
           try {
-            const saved = await saveFavorite({ items: idsOf(fit), ai: aiEvaluation(fit, date) });
+            const saved = await saveFavorite({ items: idsOf(fit), review: getReview(fit), ai: aiEvaluation(fit, date) });
             upgradeWithGemini(saved, fit, date);
             toast('お気に入りに保存しました');
           } finally { btn.disabled = false; }

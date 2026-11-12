@@ -1,40 +1,43 @@
-// Gemini のレビュー表示（コーデ作成・朝ブリーフで共通）。同じ組み合わせ・天気なら使い回し、
-// 選び直している間は呼ばず、複数あっても1件ずつ順に頼む（無料枠の回数・同時利用の上限を使いすぎないため）。
+// Gemini のレビュー表示（コーデ作成・朝ブリーフで共通）。
+// 頼んだときだけGeminiを呼び、結果は端末に覚える。「再評価」を押すまで同じ内容を出す（開くたびに無料枠を使わない）。
 import { el, clear } from '../util/dom.js';
 import { reviewOutfit, hasReviewKey } from '../data/review.js';
+import { getReview, setReview } from '../data/review-store.js';
 
-const reviews = new Map();
-const inflight = new Map();
-let chain = Promise.resolve();
+let chain = Promise.resolve(); // 同時に頼まず1件ずつ
 
-/** onScore(n): アプリの点とGeminiの点の平均が出たとき、画面の点数を書き換える。 */
+/** onScore(n): Geminiの点数が出たとき、画面の点数をその点数だけに書き換える（アプリの点は出さない）。 */
 export function reviewBox(fit, wx, events, appScore, onScore) {
   const box = el('div', { class: 'review', 'aria-live': 'polite' });
-  if (!hasReviewKey()) { box.append(el('p', { class: 'muted', text: '設定でGeminiのキーを入れると、Geminiの厳しめレビューが付きます' })); return box; }
+  if (!hasReviewKey()) return box; // キーが無いときは何も出さない
   const names = events.map((e) => e.title || e.name || '').filter(Boolean);
-  const key = JSON.stringify([['outer', 'tops', 'bottoms', 'shoes'].map((k) => (fit[k] ? [fit[k].id, fit[k].color_main, fit[k].color_sub, fit[k].warmth, fit[k].formality] : 0)), (fit.accessories || []).map((a) => a.id), Math.round(wx.feels), Math.round(wx.pop), names]);
+  let busy = false;
+  const btn = (text, fn) => el('button', { type: 'button', class: 'btn', text, onclick: fn });
   const show = (rv) => {
-    const mix = Math.round((appScore + rv.score) / 2);
-    if (onScore) onScore(mix);
+    if (onScore) onScore(rv.score);
     clear(box);
     box.append(el('h3', { class: 'card-title', text: `Geminiレビュー ${rv.score}点` }),
-      el('p', { class: 'muted', text: `総合 ${mix}点（アプリ ${appScore}点 と Gemini ${rv.score}点の平均）` }),
-      rv.good ? el('p', { text: `◎ ${rv.good}` }) : null, rv.bad ? el('p', { text: `△ ${rv.bad}` }) : null, rv.fix ? el('p', { text: `→ ${rv.fix}` }) : null);
+      rv.color ? el('p', { text: `色: ${rv.color}` }) : null,
+      rv.good ? el('p', { text: `◎ ${rv.good}` }) : null, rv.bad ? el('p', { text: `△ ${rv.bad}` }) : null, rv.fix ? el('p', { text: `→ ${rv.fix}` }) : null,
+      el('p', { class: 'muted', text: rv.at ? `${rv.at.replace('T', ' ')} のレビュー` : '' }),
+      btn('再評価する', ask));
   };
-  if (reviews.has(key)) { show(reviews.get(key)); return box; }
-  box.append(el('p', { class: 'muted', text: 'Geminiがレビュー中…' }));
-  setTimeout(() => {
-    if (!box.isConnected) return; // もう選び直されている
-    if (!inflight.has(key)) {
-      const run = chain.then(() => reviewOutfit(fit, wx, names, appScore));
-      chain = run.then(() => {}, () => {});
-      inflight.set(key, run.finally(() => inflight.delete(key)));
-    }
-    inflight.get(key).then((rv) => {
-      reviews.set(key, rv);
-      if (reviews.size > 30) reviews.delete(reviews.keys().next().value);
-      if (box.isConnected) show(rv);
-    }).catch((e) => { if (box.isConnected) { clear(box); box.append(el('p', { class: 'muted', text: `Geminiのレビューは出せませんでした：${e.message}` })); } });
-  }, 900);
+  function ask() {
+    if (busy) return;
+    busy = true;
+    clear(box); box.append(el('p', { class: 'muted', text: 'Geminiがレビュー中…' }));
+    const run = chain.then(() => reviewOutfit(fit, wx, names, appScore));
+    chain = run.then(() => {}, () => {});
+    run.then(async (rv) => {
+      await setReview(fit, rv);
+      if (box.isConnected) show(getReview(fit));
+    }).catch((e) => {
+      if (!box.isConnected) return;
+      clear(box);
+      box.append(el('p', { class: 'muted', text: `Geminiのレビューは出せませんでした：${e.message}` }), btn(getReview(fit) ? '再評価する' : 'Geminiにレビューしてもらう', ask));
+    }).finally(() => { busy = false; });
+  }
+  const saved = getReview(fit);
+  if (saved) show(saved); else box.append(btn('Geminiにレビューしてもらう', ask));
   return box;
 }
