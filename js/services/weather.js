@@ -2,6 +2,7 @@
 // 服装を決めるため、体感温度・紫外線・風の強さも取る。
 import { WX } from '../config.js';
 import { cacheGet, cacheSet } from './cache.js';
+import { fetchT } from '../util/net.js';
 
 /** 天気の番号（WMO）→ 絵文字と言葉。Event list の weatherLabel と同じ。 */
 export function weatherLabel(code) {
@@ -29,7 +30,7 @@ export async function forecast(pos) {
   if (hit) return hit;
   const daily = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,wind_speed_10m_max';
   const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=8`;
-  const res = await fetch(url);
+  const res = await fetchT(url);
   if (!res.ok) throw new Error('weather');
   const body = await res.json();
   const d = body.daily, h = body.hourly;

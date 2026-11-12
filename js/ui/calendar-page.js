@@ -1,61 +1,75 @@
-// カレンダー画面：月ごとの表示。日付に天気（予報のある日）・予定・着たコーデの印を出し、
-// タップした日の予定・天気・着たコーデを下に見せる。「この日のコーデ」で朝ブリーフをその日で開く。
+// カレンダー画面（Aqua-lab と同じ仕様）：年月の選択（回して選ぶ）・今日へ戻る・‹ › と左右スワイプで月を移動・
+// 前後の月の日を薄く表示（押すとその月へ）・今日は塗りつぶし・予定の色の点（3つまで、4件以上は＋）・着たコーデの輪。
+// 日付をタップすると、その日の画面（予定・天気・着たコーデ）が開く。
 import { el, clear } from '../util/dom.js';
 import { state, notify } from '../state.js';
 import { WEEKDAYS } from '../config.js';
 import { eventsOn } from '../data/calendar-feed.js';
-import { wearOn, fitOf } from '../data/learning.js';
-import { weatherLabel } from '../services/weather.js';
-import { toIso, todayIso, mdLong } from '../util/date.js';
-import { fitRow } from './outfit-card.js';
+import { wearOn } from '../data/learning.js';
+import { toIso, todayIso } from '../util/date.js';
+import { onHSwipe, slideIn } from './gestures.js';
+import { openDay } from './day-sheet.js';
+import { openMonthWheel } from './month-wheel.js';
 
-const monthOf = (iso) => iso.slice(0, 7);
-const shiftMonth = (ym, n) => { const [y, m] = ym.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return toIso(d).slice(0, 7); };
+const pad = (n) => String(n).padStart(2, '0');
+const ymd = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`; // m は 0〜11
 
-function cell(date, today) {
-  const evs = eventsOn(date);
-  const d = state.weather.home && state.weather.home.days[date];
-  const sel = state.ui.calSel === date;
-  return el('button', { type: 'button', class: 'cal-cell' + (date === today ? ' today' : '') + (sel ? ' sel' : ''), 'aria-pressed': String(sel),
-    'aria-label': `${mdLong(date)}${evs.length ? `、予定${evs.length}件` : ''}`, onclick: () => { state.ui.calSel = date; notify(); } },
-    el('b', { text: String(+date.slice(8)) }),
-    el('span', { class: 'cal-wx', 'aria-hidden': 'true', text: d ? weatherLabel(d.code).icon : '' }),
-    el('span', { class: 'cal-dots', 'aria-hidden': 'true' }, evs.slice(0, 3).map((ev) => el('i', { style: `background:${ev.color}` })), wearOn(date) ? el('i', { class: 'worn' }) : null));
-}
-
-function agenda(date) {
-  const box = el('section', { class: 'card cal-day' }, el('h2', { class: 'card-title', text: mdLong(date) }));
-  const d = state.weather.home && state.weather.home.days[date];
-  if (d) { const w = weatherLabel(d.code); box.append(el('p', { text: `${w.icon} ${w.label}　${d.max}℃ / ${d.min}℃　降水${d.pop}%` })); }
-  const evs = eventsOn(date);
-  if (evs.length) box.append(el('ul', { class: 'ev-list' }, evs.map((ev) => el('li', { class: 'ev-row', style: `--c:${ev.color}` },
-    el('span', { class: 'chip', text: ev.tab || '予定' }), el('div', null, el('p', { class: 'ev-title', text: ev.title }), ev.place ? el('p', { class: 'ev-meta', text: ev.place }) : null)))));
-  else box.append(el('p', { class: 'muted', text: '予定なし' }));
-  const rec = wearOn(date);
-  if (rec) box.append(el('p', { class: 'hint', text: '着たコーデ' }), fitRow(fitOf(rec.items)));
-  box.append(el('button', { type: 'button', class: 'btn solid', text: date < todayIso() ? 'この日を開く' : 'この日のコーデを見る',
-    onclick: () => { state.ui.briefDate = date; state.screen = 'brief'; notify(); } }));
-  return box;
+function cell(y, m, d, today, other) {
+  const key = ymd(y, m, d), wd = new Date(y, m, d).getDay(), evs = eventsOn(key), worn = !!wearOn(key);
+  const cls = ['cal-cell', other && 'other', key === today && 'today', wd === 0 && 'sun', wd === 6 && 'sat'].filter(Boolean).join(' ');
+  const label = `${other ? '前後の月の日：' : ''}${m + 1}月${d}日（${WEEKDAYS[wd]}）${key === today ? '、今日' : ''}${evs.length ? `、予定${evs.length}件` : ''}${worn ? '、着たコーデの記録あり' : ''}${other ? '、押すとその月に切り替わります' : ''}`;
+  return el('button', { type: 'button', class: cls, 'data-date': key, 'data-other': other ? '1' : null, 'aria-label': label },
+    el('span', { class: 'num', text: String(d) }),
+    el('span', { class: 'dots', 'aria-hidden': 'true' },
+      worn ? el('i', { class: 'dot plan' }) : null,
+      evs.slice(0, 3).map((ev) => el('i', { class: 'dot', style: `background:${ev.color}` })),
+      evs.length > 3 ? el('span', { class: 'plus', text: '+' }) : null));
 }
 
 export function renderCalendar(root) {
   clear(root);
   const today = todayIso();
-  const ym = state.ui.calMonth || monthOf(today);
-  const [y, m] = ym.split('-').map(Number);
-  const first = new Date(y, m - 1, 1), days = new Date(y, m, 0).getDate();
-  const go = (n) => () => { state.ui.calMonth = shiftMonth(ym, n); notify(); };
+  if (!state.ui.calMonth) state.ui.calMonth = today.slice(0, 7);
+  const [vy, vm1] = state.ui.calMonth.split('-').map(Number), vm = vm1 - 1;
+  const setMonth = (y, m) => { state.ui.calMonth = `${y}-${pad(m + 1)}`; notify(); };
+  const move = (delta) => { const d = new Date(vy, vm + delta, 1); setMonth(d.getFullYear(), d.getMonth()); const g = document.querySelector('#cal-grid'); if (g) slideIn(g, delta); };
+
+  const first = new Date(vy, vm, 1).getDay(), days = new Date(vy, vm + 1, 0).getDate();
   const cells = [];
-  for (let i = 0; i < first.getDay(); i++) cells.push(el('span', { class: 'cal-blank' }));
-  for (let d = 1; d <= days; d++) cells.push(cell(`${ym}-${String(d).padStart(2, '0')}`, today));
-  if (!state.ui.calSel) state.ui.calSel = today;
-  root.append(
+  const prev = new Date(vy, vm, 0); // 前の月の最後の日
+  for (let i = first - 1; i >= 0; i--) cells.push(cell(prev.getFullYear(), prev.getMonth(), prev.getDate() - i, today, true));
+  for (let d = 1; d <= days; d++) cells.push(cell(vy, vm, d, today, false));
+  const rest = (7 - ((first + days) % 7)) % 7, next = new Date(vy, vm + 1, 1);
+  for (let d = 1; d <= rest; d++) cells.push(cell(next.getFullYear(), next.getMonth(), d, today, true));
+
+  const grid = el('div', { class: 'cal-grid', id: 'cal-grid' }, cells);
+  grid.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-date]');
+    if (!c) return;
+    if (c.dataset.other) { // 前後の月の日：その月に切り替える
+      const [y, m] = c.dataset.date.split('-').map(Number);
+      const delta = (y - vy) * 12 + (m - 1 - vm);
+      setMonth(y, m - 1);
+      const g = document.querySelector('#cal-grid'); if (g) slideIn(g, delta);
+      return;
+    }
+    state.ui.calSel = c.dataset.date;
+    openDay(c.dataset.date);
+  });
+
+  const head = el('div', { class: 'cal-top' },
+    el('button', { type: 'button', class: 'pill', 'aria-label': '年と月を選ぶ', onclick: () => openMonthWheel(vy, vm, setMonth) },
+      el('span', { text: `${vy}年` }), el('span', { class: 'sp', text: `${vm + 1}月` }), el('span', { class: 'caret', 'aria-hidden': 'true', text: '▾' })),
+    el('button', { type: 'button', class: 'today-btn', text: '今日', onclick: () => { const n = new Date(); setMonth(n.getFullYear(), n.getMonth()); } }));
+
+  const wrap = el('div', { class: 'cal-wrap' },
     el('div', { class: 'cal-head' },
-      el('button', { type: 'button', class: 'btn', text: '‹', 'aria-label': '前の月', onclick: go(-1) }),
-      el('h1', { class: 'page-title', text: `${y}年${m}月` }),
-      el('button', { type: 'button', class: 'btn', text: '›', 'aria-label': '次の月', onclick: go(1) }),
-      ym !== monthOf(today) ? el('button', { type: 'button', class: 'btn', text: '今日', onclick: () => { state.ui.calMonth = monthOf(today); state.ui.calSel = today; notify(); } }) : null),
-    el('div', { class: 'cal-grid' }, WEEKDAYS.map((w, i) => el('span', { class: 'cal-wd' + (i === 0 ? ' sun' : i === 6 ? ' sat' : ''), text: w })), cells),
-    el('p', { class: 'cal-legend' }, el('i', { class: 'worn' }), ' 着たコーデの記録　予定の色の点＝予定'),
-    agenda(state.ui.calSel));
+      el('button', { type: 'button', class: 'btn', 'aria-label': '前の月', text: '‹', onclick: () => move(-1) }),
+      head,
+      el('button', { type: 'button', class: 'btn', 'aria-label': '次の月', text: '›', onclick: () => move(1) })),
+    el('div', { class: 'weekdays' }, WEEKDAYS.map((w, i) => el('div', { class: i === 0 ? 'sun' : i === 6 ? 'sat' : '', text: w }))),
+    grid,
+    el('div', { class: 'cal-legend' }, el('span', null, el('i', { class: 'dot', style: 'background:var(--muted)' }), '予定（色は予定ごと）'), el('span', null, el('i', { class: 'dot plan' }), '着たコーデの記録')));
+  onHSwipe(wrap, move);
+  root.append(wrap);
 }

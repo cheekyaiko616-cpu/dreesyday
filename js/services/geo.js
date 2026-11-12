@@ -1,5 +1,6 @@
 // 場所の文字 → 緯度・経度。Event list の geo.js と同じ順で探す（会場表 → 地図の検索）。
 // 検索は1秒に1回までのお願いがあるので、間をあけて呼ぶ。結果は保存して、同じ場所は二度調べない。
+import { fetchT } from '../util/net.js';
 import { WX } from '../config.js';
 import { VENUES } from './venues.js';
 import { cacheGet, cacheSet } from './cache.js';
@@ -21,7 +22,7 @@ export async function locate(place) {
   if (gap > 0) await wait(gap);
   last = Date.now();
   const q = place.replace(/[（(].*?[）)]/g, ' ').trim();
-  const res = await fetch(`${WX.geoApi}?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(q)}`);
+  const res = await fetchT(`${WX.geoApi}?format=jsonv2&limit=1&accept-language=ja&q=${encodeURIComponent(q)}`);
   if (!res.ok) throw new Error('geo');
   const list = await res.json();
   const top = Array.isArray(list) && list[0];

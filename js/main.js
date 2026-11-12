@@ -20,6 +20,8 @@ import { renderBuilder } from './ui/builder-page.js';
 import { renderFavorites } from './ui/favorites-page.js';
 import { initItemSheet } from './ui/item-sheet.js';
 import { initFavSheet } from './ui/fav-sheet.js';
+import { initDaySheet } from './ui/day-sheet.js';
+import { initMonthWheel } from './ui/month-wheel.js';
 import { initSettingsSheet } from './ui/settings-sheet.js';
 import { initSettingsDetail } from './ui/settings-detail.js';
 import { todayIso } from './util/date.js';
@@ -39,6 +41,8 @@ async function start() {
   initShell();
   initItemSheet();
   initFavSheet();
+  initDaySheet();
+  initMonthWheel();
   initSettingsSheet();
   initSettingsDetail();
   try { // 読み込みに失敗しても、画面は出す（空の状態で動く）
@@ -50,15 +54,15 @@ async function start() {
   render();
   requestPersistence();
   if (!__PREVIEW__) ensureCuts(); // 切り抜きが無い古いアイテムを裏で切り抜く
-  await loadCalendar();   // 予定が分かってから、会場の天気も読む
-  await loadWeather();
+  const cal = loadCalendar(); // 予定は並行して読む（天気は予定を待たずに出す。会場の天気だけ、予定が分かってから）
+  await loadWeather(cal);
 }
 
 // 日付が変わったら（朝アプリを開き直したとき）、予定と天気を取り直す
 let day = todayIso();
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
-  if (todayIso() !== day) { day = todayIso(); loadCalendar().then(loadWeather); }
+  if (todayIso() !== day) { day = todayIso(); const cal = loadCalendar(); loadWeather(cal); }
 });
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

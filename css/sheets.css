@@ -62,3 +62,22 @@
 .star.on { color: #b7791f; }
 
 .confirm-text { flex: 1 0 100%; font-weight: 600; }
+
+/* 日ごとの画面 */
+.day-nav { display: flex; align-items: center; gap: var(--sp-2); flex: 1; }
+.day-nav h2 { flex: 1; text-align: center; font-size: 16px; }
+.day-nav .btn { padding: 6px 14px; line-height: 1; }
+.sheet.day-from-right { animation: dayFromRight .22s ease; }
+.sheet.day-from-left { animation: dayFromLeft .22s ease; }
+.dy-wx { margin: var(--sp-2) 0; }
+.dy-go { margin: var(--sp-4) 0; }
+/* 年月のホイール（小さな画面） */
+.wheel-scrim { align-items: center; }
+.sheet.wheel-sheet { height: auto; max-width: 340px; border-radius: 20px; padding: var(--sp-4); margin: auto; }
+.wheel-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.wheel-box { position: relative; display: flex; height: 200px; touch-action: pan-y; overflow-x: hidden; }
+.wheel-band { position: absolute; left: 0; right: 0; top: 80px; height: 40px; background: var(--bg); border-radius: 10px; pointer-events: none; z-index: 0; }
+.wheel { position: relative; z-index: 1; flex: 1; height: 200px; overflow-y: auto; scroll-snap-type: y mandatory; text-align: center; padding: 80px 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; overflow-x: hidden; touch-action: pan-y; }
+.wheel::-webkit-scrollbar { display: none; }
+.wheel .wi { height: 40px; line-height: 40px; scroll-snap-align: center; font-size: 18px; color: var(--muted); transform: scale(.92); transition: transform .12s ease, color .12s ease; }
+.wheel .wi.on { color: var(--ink); font-weight: bold; transform: scale(1.08); }

@@ -1,5 +1,6 @@
 // Event list の「カレンダーに追加した予定」（calendar.json）を読む。
 // 通信できないときは、最後に読めた内容を使う。Claude上のプレビューでは見本の予定を使う。
+import { fetchT } from '../util/net.js';
 import { state, notify } from '../state.js';
 import { CALENDAR } from '../config.js';
 import { RULES } from './rules.js';
@@ -24,7 +25,7 @@ function cached() {
 export async function loadCalendar() {
   if (__PREVIEW__) { state.calendar = { status: 'sample', items: clean(sampleCalendar()), at: '' }; notify(); return; }
   try {
-    const res = await fetch(`${CALENDAR.url}?t=${Date.now()}`, { cache: 'no-store' });
+    const res = await fetchT(`${CALENDAR.url}?t=${Date.now()}`, { cache: 'no-store' });
     if (res.status === 404) { state.calendar = { status: 'ok', items: [], at: '' }; notify(); return; }
     if (!res.ok) throw new Error('calendar');
     const body = await res.json();

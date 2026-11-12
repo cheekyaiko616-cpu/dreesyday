@@ -10,7 +10,7 @@ import { daySwing } from '../engine/swing.js';
 
 const get = (pos) => (__PREVIEW__ ? Promise.resolve(sampleForecast(pos)) : forecast(pos));
 
-export async function loadWeather() {
+export async function loadWeather(calendarReady) {
   const home = state.settings.home || (__PREVIEW__ ? { name: '名古屋（見本）', lat: 35.17, lon: 136.88 } : null);
   const w = { status: 'loading', home: null, homeName: home ? home.name : '', venues: {} };
   state.weather = w;
@@ -18,17 +18,22 @@ export async function loadWeather() {
   try {
     if (home) w.home = await get(home);
   } catch (e) { w.status = 'error'; }
-  // 1週間先までの予定の会場（多すぎると遅くなるので、最大6か所）
+  // 自宅の天気が読めたら、すぐ表示する（会場の天気を待たない）
+  if (w.status !== 'error') w.status = home ? 'ok' : 'nohome';
+  notify();
+  try { if (calendarReady) await calendarReady; } catch { /* 予定が読めなくても続ける */ }
+  if (state.weather !== w) return;
+  // 1週間先までの予定の会場は、あとから1か所ずつ足していく（多すぎると遅いので最大6か所。近い日の予定が先）
   const places = new Set();
   [0, 1, 2, 3, 4, 5, 6, 7].map((i) => addDaysIso(todayIso(), i)).forEach((d) => eventsOn(d).forEach((ev) => { if (hasPlace(ev.place)) places.add(ev.place); }));
   for (const place of [...places].slice(0, 6)) {
+    if (state.weather !== w) return; // 読み直しが始まっていたら、古いほうは打ち切る
     try {
       const pos = __PREVIEW__ ? { lat: 36.53, lon: 140.23, name: place } : await locate(place);
       w.venues[place] = pos ? { name: pos.name || place, data: await get(pos) } : null;
     } catch (e) { w.venues[place] = null; }
+    notify();
   }
-  if (w.status !== 'error') w.status = home ? 'ok' : 'nohome';
-  notify();
 }
 
 /**
