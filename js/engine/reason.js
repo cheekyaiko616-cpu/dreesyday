@@ -10,6 +10,9 @@ export function reasonText(o, r, weather, popThreshold) {
   if (r.score.warmth >= 0.7) parts.push(`体感${Math.round(weather.feels)}℃にちょうどよい暖かさ`);
   else if (r.warmth_sum < r.band.target) parts.push(`体感${Math.round(weather.feels)}℃。少し薄着なので注意`);
   else parts.push(`体感${Math.round(weather.feels)}℃。暑ければ一枚脱いで`);
+  if (weather.swing && weather.swing.range >= 8 && o.outer) parts.push('朝晩の冷えに上着が役立つ');
+  if (r.score.pattern < 1) parts.push('柄ものが重なっている');
+  if (r.score.material < 1) parts.push('素材が今日の気温に合わない');
   parts.push(REL[r.color_summary.relationship] || '');
   let text = '';
   for (const p of parts.filter(Boolean)) {

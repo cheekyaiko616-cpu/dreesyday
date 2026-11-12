@@ -55,6 +55,11 @@ Event list と同じ `cheekyaiko616-cpu.github.io` の中なので、`calendar.j
 ## 切り抜きモデルについて
 `models/u2netp.*` は U²-Net-p（Apache-2.0、Xuebin Qin ら）の重みを半精度にしたもの（約2.3MB）。出典: https://github.com/xuebinqin/U-2-Net 。端末の中だけで動き、写真は外へ送られない。
 
+- `js/data/backup-run.js` / `js/ui/backup-card.js`: ワンタップのバックアップ（共有シート or ダウンロード）と、7日以上取っていないときのお知らせ
+- `js/engine/history.js`: 着た履歴の集計（クローゼットの着た回数・最後に着てから何日。点数には使わない）
+- `js/engine/swing.js`: 朝・昼・夜の気温差（羽織りものの目安）
+- `js/ui/calendar-page.js`: カレンダー（月表示）。日付をタップ→その日の予定・天気・着たコーデ→朝ブリーフをその日で開く（天気の予報は1週間先まで）
+- `js/engine/review.js` / `js/data/review.js` / `js/data/review-store.js` / `js/ui/review-box.js`: Geminiの厳しめレビュー（頼んだときだけ呼び、端末に記憶。再評価ボタンで更新）
 - `js/engine/evaluate.js` / `js/data/evaluation.js`: お気に入りの「AI評価」文章（アプリ内の判定。通信なし）
 - `js/services/gemini.js` / `js/engine/gemini-prompt.js` / `js/data/gemini-key.js`: Geminiで評価文を作る（キーは端末内のみ。設定画面で入力）
 - `js/engine/item-judge.js` / `js/data/item-judge.js`: 服の写真をGeminiで判定（種類・色・名前・暖かさなど）

@@ -190,6 +190,42 @@ import { parseJudge } from '../js/engine/item-judge.js';
   ok(clash.score.total < 0.7, '色がばらばらな組み合わせは70点未満');
   ok(cold.score.total < 0.7, '寒い日に薄着の組み合わせは70点未満');
 }
+
+// 柄と素材
+{
+  const ctx = { rules: R, adjust, weather: { feels: 20, pop: 0, wind: 0 }, need: { need: 0, sports: false }, favorites: [] };
+  const mk = (id, c, w, hex, o = {}) => ({ id, category: c, warmth: w, formality: 'casual', color_main: hex, color_sub: '', rain_ok: false, pattern: 'plain', material: 'other', ...o });
+  const base = { tops: mk('p1', 'tops', 2, '#f2f2ef'), bottoms: mk('p2', 'bottoms', 2, '#1c1c1e'), outer: null, shoes: mk('p3', 'shoes', 1, '#f4f4f2'), accessories: [] };
+  const plain = scoreOutfit(base, ctx);
+  const clash = scoreOutfit({ ...base, tops: mk('p1', 'tops', 2, '#f2f2ef', { pattern: 'stripe' }), bottoms: mk('p2', 'bottoms', 2, '#1c1c1e', { pattern: 'check' }) }, ctx);
+  ok(plain.score.pattern === 1 && clash.score.pattern < 0.5 && clash.score.total < plain.score.total, '柄ものが2つ重なると下がる');
+  const hot = scoreOutfit({ ...base, tops: mk('p1', 'tops', 2, '#f2f2ef', { material: 'wool' }) }, { ...ctx, weather: { feels: 30, pop: 0, wind: 0 } });
+  ok(hot.score.material < 1, '暑い日のウールは素材の点が下がる');
+  ok(parseJudge({ category: 'tops', pattern: 'stripe', material: 'wool' }).pattern === 'stripe' && parseJudge({ category: 'tops', pattern: 'xx', material: 'yy' }).pattern === undefined, 'AI判定の柄・素材は決まった値だけ使う');
+}
+
+// 着た履歴（一覧の表示用。点数には使わない）
+import { wearHistory, diffDays } from '../js/engine/history.js';
+{
+  const wears = [{ date: '2026-11-11', items: { tops: 'h1', bottoms: 'h3', outer: null, shoes: null, accessories: [] }, rating: 'good' }, { date: '2026-11-10', items: { tops: 'h2', bottoms: 'h3' }, rating: 'did_not_use' }];
+  const h = wearHistory(wears, '2026-11-12');
+  ok(diffDays('2026-11-12', '2026-11-11') === 1 && diffDays('2026-12-01', '2026-11-30') === 1, '日付の差が正しい');
+  ok(h.ago.h1 === 1 && h.count.h1 === 1 && h.ago.h2 === undefined, '「着なかった」は数えない');
+  ok(wearHistory(wears, '2026-11-11').count.h1 === undefined, '基準の日以降の記録は数えない');
+}
+// 1日の気温差
+import { daySwing } from '../js/engine/swing.js';
+{
+  const hours = [6, 8, 10, 12, 14, 16, 18, 20, 22].map((h, i) => ({ date: '2026-11-12', hour: h, temp: [8, 9, 14, 18, 19, 16, 12, 10, 9][i] }));
+  const s = daySwing(hours, '2026-11-12');
+  ok(s.morning === 9 && s.noon === 19 && s.night === 10 && s.range === 11, '朝・昼・夜の気温と差');
+  ok(daySwing(hours, '2026-11-13') === null, '1時間ごとの天気がなければ出さない');
+  const ctx = { rules: R, adjust, weather: { feels: 22, pop: 0, wind: 0, swing: s }, need: { need: 0, sports: false }, favorites: [] };
+  const mk = (id, c, w, hex) => ({ id, category: c, warmth: w, formality: 'casual', color_main: hex, color_sub: '', rain_ok: false, pattern: 'plain', material: 'other' });
+  const base = { tops: mk('w1', 'tops', 2, '#f2f2ef'), bottoms: mk('w2', 'bottoms', 2, '#1c1c1e'), shoes: null, accessories: [] };
+  const noOut = scoreOutfit({ ...base, outer: null }, ctx), noSwing = scoreOutfit({ ...base, outer: null }, { ...ctx, weather: { ...ctx.weather, swing: null } });
+  ok(noOut.score.warmth < noSwing.score.warmth, '気温差が大きい日は、上着なしの暖かさの点が下がる');
+}
 // Gemini レビューの文章と検査
 import { buildReviewPrompt, parseReview } from '../js/engine/review.js';
 {

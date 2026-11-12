@@ -20,7 +20,7 @@ export function weatherLabel(code) {
 export const daytimeFeels = (d) => Math.round((d.feelMin + (d.feelMax - d.feelMin) * 0.6) * 10) / 10;
 
 /**
- * 場所(lat/lon)の今日から3日分と、今日・明日の1時間ごと。通信できなければ例外。
+ * 場所(lat/lon)の今日から8日分（1週間先まで）と、1時間ごと。通信できなければ例外。
  * 返す: { days: { 'YYYY-MM-DD': { code, max, min, feelMax, feelMin, pop, wind } }, hours: [{ date, hour, code, temp, pop }] }
  */
 export async function forecast(pos) {
@@ -28,7 +28,7 @@ export async function forecast(pos) {
   const hit = cacheGet('wx', key, WX.ttl);
   if (hit) return hit;
   const daily = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,wind_speed_10m_max';
-  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=3`;
+  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=8`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('weather');
   const body = await res.json();

@@ -3,7 +3,7 @@
 import { REL } from './reason.js';
 import { sizeFeel } from './fit.js';
 
-const AXES = [['warmth', '暖かさ', true], ['rain', '雨への備え', true], ['formality', '服装の格', false], ['color_items', '色（アイテム）', false], ['color_total', '色のまとまり', false]];
+const AXES = [['warmth', '暖かさ', true], ['rain', '雨への備え', true], ['formality', '服装の格', false], ['color_items', '色（アイテム）', false], ['color_total', '色のまとまり', false], ['pattern', '柄の重なり', false], ['material', '素材と季節', false]];
 const GOOD = 0.75, WEAK = 0.55;
 
 /**

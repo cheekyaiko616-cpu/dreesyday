@@ -7,7 +7,7 @@ import { flatlayEl } from './flatlay.js';
 import { colorBalanceEl } from './color-balance.js';
 import { outfitHexes } from '../engine/score.js';
 
-const LABEL = { warmth: '暖かさ', rain: '雨', formality: '服装の格', color_items: '色(アイテム)', color_total: '色(全体)' };
+const LABEL = { warmth: '暖かさ', rain: '雨', formality: '服装の格', color_items: '色(アイテム)', color_total: '色(全体)', pattern: '柄', material: '素材' };
 
 /** 点数の小さな棒グラフ。 */
 export function scoreBars(score) {

@@ -7,7 +7,8 @@ import { saveSettings } from '../data/settings.js';
 import { formalityOf } from '../data/calendar-feed.js';
 import { loadWeather } from '../data/weather-load.js';
 import { resetLearning } from '../data/learning.js';
-import { backupText, restoreBackup } from '../data/backup.js';
+import { restoreBackup } from '../data/backup.js';
+import { runBackup, lastBackupAt } from '../data/backup-run.js';
 import { seedSamples } from './sample-seed.js';
 import { isMemoryOnly } from '../data/db.js';
 import { geminiKey, saveGeminiKey } from '../data/gemini-key.js';
@@ -125,13 +126,15 @@ function dataGroup(done) {
     file.value = '';
   });
   return group('データ',
+    el('p', { class: 'muted', text: lastBackupAt() ? `前回のバックアップ：${lastBackupAt().slice(0, 10).replace(/-/g, '/')}` : 'まだバックアップを取っていません' }),
     isMemoryOnly() ? el('p', { class: 'note', text: 'この環境では保存できないため、閉じるとデータが消えます' }) : null,
     el('div', { class: 'inline-row' },
-      el('button', { type: 'button', class: 'btn', text: 'バックアップを書き出す', onclick: async () => {
-        const url = URL.createObjectURL(new Blob([await backupText()], { type: 'application/json' }));
-        const a = el('a', { href: url, download: `${APP.id}-${new Date().toISOString().slice(0, 10)}.json` });
-        document.body.append(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
+      el('button', { type: 'button', class: 'btn solid', text: 'バックアップを保存', onclick: async (e) => {
+        const b = e.currentTarget; b.disabled = true;
+        try {
+          const how = await runBackup();
+          if (how !== 'cancelled') toast(how === 'shared' ? 'バックアップを保存しました' : 'バックアップをダウンロードしました');
+        } catch (err) { toast('バックアップを作れませんでした'); } finally { b.disabled = false; }
       } }),
       el('label', { class: 'btn', for: 'st-file', text: '読み込む' }), file),
     el('button', { type: 'button', class: 'btn', text: '登録済みの服を切り抜く', onclick: async (e) => {

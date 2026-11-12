@@ -36,7 +36,7 @@ h1, h2, h3, p { margin: 0; }
 /* 下の切り替えボタン */
 #app-nav {
   z-index: 6;
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   padding: var(--sp-1) var(--sp-2) calc(env(safe-area-inset-bottom, 0px) + var(--sp-1));
   background: var(--top); box-shadow: var(--sh-weak-up);
 }
@@ -59,7 +59,7 @@ h1, h2, h3, p { margin: 0; }
 .actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-3); }
 .actions .btn.solid { flex: 1 1 96px; }
 
-input[type="text"], input[type="number"], input[type="password"], select, textarea {
+input[type="text"], input[type="search"], input[type="number"], input[type="password"], select, textarea {
   width: 100%; min-height: 44px; padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line); border-radius: var(--r-m); background: var(--bg); font-size: var(--fs-lg);
 }

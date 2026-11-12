@@ -2,7 +2,7 @@
 import { state, notify } from '../state.js';
 import { getAll, put, del } from './db.js';
 import { storePhoto, storeCutFromPng, removeImages } from './images.js';
-import { CATEGORIES, SUBS, FORMALITY, STATUS } from '../config.js';
+import { CATEGORIES, SUBS, FORMALITY, STATUS, PATTERNS, MATERIALS } from '../config.js';
 
 const HEX = /^#[0-9a-f]{6}$/i;
 const pick = (v, list, def) => (list.some((x) => (Array.isArray(x) ? x[0] : x.id) === v) ? v : def);
@@ -18,6 +18,8 @@ export function cleanItem(x) {
     sub_category: pick(x.sub_category, SUBS[category], 'other'),
     warmth: Math.max(1, Math.min(5, Math.round(+x.warmth || 3))),
     formality: pick(x.formality, FORMALITY, 'casual'),
+    pattern: pick(x.pattern, PATTERNS, 'plain'),
+    material: pick(x.material, MATERIALS, 'other'),
     color_main: HEX.test(x.color_main) ? x.color_main.toLowerCase() : '#808080',
     color_sub: HEX.test(x.color_sub) ? x.color_sub.toLowerCase() : '',
     rain_ok: x.rain_ok === true,

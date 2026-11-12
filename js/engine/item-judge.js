@@ -1,5 +1,5 @@
 // 服の写真をAIに判定してもらうための文章と、返ってきた答えの検査（純関数）。
-import { CATEGORIES, SUBS, FORMALITY } from '../config.js';
+import { CATEGORIES, SUBS, FORMALITY, PATTERNS, MATERIALS } from '../config.js';
 
 export const JUDGE_PROMPT = [
   '写真に写っている服を1点だけ判定し、JSONだけで答えてください。背景や影、モデルの肌は無視します。',
@@ -10,6 +10,8 @@ export const JUDGE_PROMPT = [
   'color_sub: 別の目立つ色（柄や切り替え）。なければ空文字',
   'warmth: 1（薄手）〜5（真冬）の整数',
   `formality: ${FORMALITY.map((f) => f[0]).join(' | ')}`,
+  `pattern: ${PATTERNS.map((x) => x[0]).join(' | ')}（無地は plain）`,
+  `material: ${MATERIALS.map((x) => x[0]).join(' | ')}（見て分からなければ other）`,
   'rain_ok: 撥水・防水の服なら true'
 ].join('\n');
 
@@ -29,6 +31,8 @@ export function parseJudge(o) {
   r.color_sub = HEX.test(o.color_sub) ? o.color_sub.toLowerCase() : '';
   if (Number.isFinite(+o.warmth)) r.warmth = Math.max(1, Math.min(5, Math.round(+o.warmth)));
   if (FORMALITY.some((f) => f[0] === o.formality)) r.formality = o.formality;
+  if (PATTERNS.some((x) => x[0] === o.pattern)) r.pattern = o.pattern;
+  if (MATERIALS.some((x) => x[0] === o.material)) r.material = o.material;
   if (typeof o.rain_ok === 'boolean') r.rain_ok = o.rain_ok;
   return r;
 }

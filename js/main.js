@@ -7,6 +7,7 @@ import { loadItems } from './data/closet.js';
 import { loadFavorites } from './data/favorites.js';
 import { loadGeminiKey } from './data/gemini-key.js';
 import { loadReviews } from './data/review-store.js';
+import { loadBackupInfo } from './data/backup-run.js';
 import { loadLearning } from './data/learning.js';
 import { loadChecks } from './data/checklist.js';
 import { loadCalendar } from './data/calendar-feed.js';
@@ -14,6 +15,7 @@ import { loadWeather } from './data/weather-load.js';
 import { initShell, renderNav } from './ui/shell.js';
 import { renderBrief } from './ui/brief-page.js';
 import { renderCloset } from './ui/closet-page.js';
+import { renderCalendar } from './ui/calendar-page.js';
 import { renderBuilder } from './ui/builder-page.js';
 import { renderFavorites } from './ui/favorites-page.js';
 import { initItemSheet } from './ui/item-sheet.js';
@@ -24,7 +26,7 @@ import { todayIso } from './util/date.js';
 import { ensureCuts } from './services/ensure-cut.js';
 import { seedIfNeeded } from './ui/sample-seed.js';
 
-const PAGES = { brief: renderBrief, closet: renderCloset, builder: renderBuilder, favorites: renderFavorites };
+const PAGES = { brief: renderBrief, calendar: renderCalendar, closet: renderCloset, builder: renderBuilder, favorites: renderFavorites };
 
 let frame = 0;
 function render() {
@@ -40,7 +42,7 @@ async function start() {
   initSettingsSheet();
   initSettingsDetail();
   try { // 読み込みに失敗しても、画面は出す（空の状態で動く）
-    await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey(), loadReviews()]);
+    await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey(), loadReviews(), loadBackupInfo()]);
   } catch (e) { console.error(e); }
   if (__PREVIEW__) { try { await seedIfNeeded(); } catch (e) { console.error(e); } } // 確認用：クローゼット・コーデの見本（本番では入れない）
   state.ready = true;

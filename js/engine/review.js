@@ -1,10 +1,12 @@
 // Gemini に「厳しめのレビュー」を頼むための文章と、返ってきた答えの検査（純関数）。写真・顔・体型の数字は送らない。
+import { PATTERNS, MATERIALS } from '../config.js';
+const PAT = Object.fromEntries(PATTERNS), MAT = Object.fromEntries(MATERIALS);
 const SLOT = { outer: 'アウター', tops: 'トップス', bottoms: 'ボトムス', shoes: '靴' };
 
 export function buildReviewPrompt(fit, weather, eventNames, appScore) {
   const rows = Object.keys(SLOT).filter((k) => fit[k]).map((k) => {
     const x = fit[k];
-    return `- ${SLOT[k]}: ${x.name || '名前なし'}（色 ${x.color_main}${x.color_sub ? ' / ' + x.color_sub : ''}、暖かさ${x.warmth}/5、格 ${x.formality}）`;
+    return `- ${SLOT[k]}: ${x.name || '名前なし'}（色 ${x.color_main}${x.color_sub ? ' / ' + x.color_sub : ''}、暖かさ${x.warmth}/5、格 ${x.formality}${x.pattern && x.pattern !== 'plain' ? '、柄 ' + (PAT[x.pattern] || x.pattern) : ''}${x.material && x.material !== 'other' ? '、素材 ' + (MAT[x.material] || x.material) : ''}）`;
   });
   (fit.accessories || []).forEach((a) => rows.push(`- 小物: ${a.name || '名前なし'}`));
   const wx = weather ? `体感${Math.round(weather.feels)}℃、降水確率${Math.round(weather.pop)}%` : '天気は不明';

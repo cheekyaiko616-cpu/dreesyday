@@ -63,6 +63,7 @@ export function scoreOutfit(o, ctx) {
   const sum = outfitWarmth(o, adjust, R.warmth);
   let warmth = clamp01(1 - Math.abs(sum - band.target) / R.warmth.tolerance);
   if (band.outer === 'need' && !o.outer) warmth *= R.warmth.noOuterPenalty;
+  if (weather.swing && weather.swing.range >= R.swing.from && !o.outer && band.outer !== 'need') warmth *= R.swing.noOuterPenalty; // 朝晩が冷える日は上着が欲しい
   if (band.outer === 'none' && o.outer && itemWarmth(o.outer, adjust) >= 3) warmth *= R.warmth.heavyOuterPenalty;
 
   // 雨
@@ -83,9 +84,17 @@ export function scoreOutfit(o, ctx) {
   const color_items = items.length ? items.reduce((a, it) => a + itemColorScore(it, R.color), 0) / items.length : 1;
   const tc = totalColorScore(outfitHexes(o), R.color);
 
+  // 柄：柄ものが2つ以上重なると下げる（無地どうし・柄1つは満点）
+  const patterned = ['tops', 'bottoms', 'outer'].map((k) => o[k]).filter((it) => it && it.pattern && it.pattern !== 'plain').length;
+  const pattern = patterned >= 3 ? R.pattern.three : patterned === 2 ? R.pattern.two : 1;
+  // 素材：暑い日にウール・ダウン、寒い日に麻など、季節に合わない素材を下げる
+  const mat = (it) => (!it ? 1 : weather.feels >= R.material.hotFeels && R.material.hotHeavy.includes(it.material) ? R.material.bad : weather.feels <= R.material.coldFeels && R.material.coldLight.includes(it.material) ? R.material.bad : 1);
+  const material = Math.min(1, ...items.map(mat));
+  const hasMaterial = items.some((it) => it.material && it.material !== 'other');
+
   const rainy = weather.pop >= R.rain.popThreshold;
-  const W = rainy ? { ...R.weights, rain: R.rain.rainyWeight } : { ...R.weights, rain: 0 }; // 雨の日だけ雨を見る（降らない日に満点が混ざって甘くならないように）
-  const parts = [['warmth', warmth], ['rain', rain], ['formality', formality], ['color_items', color_items], ['color_total', tc.score]].filter(([k]) => W[k] > 0);
+  const W = { ...R.weights, rain: rainy ? R.rain.rainyWeight : 0, pattern: patterned >= 2 ? R.pattern.weight : 0, material: hasMaterial ? R.material.weight : 0 }; // 雨の日だけ雨を見る（降らない日に満点が混ざって甘くならないように）
+  const parts = [['warmth', warmth], ['rain', rain], ['formality', formality], ['color_items', color_items], ['color_total', tc.score], ['pattern', pattern], ['material', material]].filter(([k]) => W[k] > 0);
   const wsum = parts.reduce((a, [k]) => a + W[k], 0);
   const avg = parts.reduce((a, [k, v]) => a + W[k] * v, 0) / wsum;
   const weakest = Math.min(...parts.map(([, v]) => v)); // ひとつでも合わない所があれば、全体の点も下げる
@@ -101,7 +110,7 @@ export function scoreOutfit(o, ctx) {
   total += itemDelta + pairDelta + outfitDelta + fav * R.favoriteBonus;
 
   return {
-    score: { warmth: round(warmth), rain: round(rain), formality: round(formality), color_items: round(color_items), color_total: round(tc.score), total: round(clamp01(total)) },
+    score: { warmth: round(warmth), rain: round(rain), formality: round(formality), color_items: round(color_items), color_total: round(tc.score), pattern: round(pattern), material: round(material), total: round(clamp01(total)) },
     color_summary: { chromatic_count: tc.chromatic_count, relationship: tc.relationship },
     warmth_sum: round(sum),
     band

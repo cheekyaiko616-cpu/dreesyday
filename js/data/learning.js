@@ -8,7 +8,7 @@ import { outfitKey } from '../engine/score.js';
 import { idsOf } from './favorites.js';
 import { itemById } from './closet.js';
 
-const KEEP = 90; // 記録を残す件数
+const KEEP = 400; // 記録を残す件数
 
 export async function loadLearning() {
   const a = await get('kv', 'adjust');

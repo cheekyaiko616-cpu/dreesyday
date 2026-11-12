@@ -40,3 +40,21 @@
 .check-btn .box { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: 2px solid var(--muted); border-radius: var(--r-s); font-size: 14px; font-weight: 700; }
 .check-btn.on { color: var(--muted); text-decoration: line-through; }
 .check-btn.on .box { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.backup-card { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.backup-card p { margin: 0; }
+.wx-swing { margin: var(--sp-2) 0 0; font-size: var(--fs-sm); color: var(--muted); }
+.cal-head { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); }
+.cal-head .page-title { flex: 1; text-align: center; margin: 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-wd { text-align: center; font-size: var(--fs-sm); color: var(--muted); padding: var(--sp-1) 0; }
+.cal-wd.sun { color: #b4483a; } .cal-wd.sat { color: #3a5ab4; }
+.cal-cell { display: flex; flex-direction: column; align-items: center; gap: 1px; min-height: 62px; padding: 4px 0; border: 1px solid transparent; border-radius: var(--r-m); background: var(--surface); }
+.cal-cell.today b { background: var(--ink, #1a1a1a); color: var(--surface); border-radius: 999px; min-width: 24px; line-height: 24px; text-align: center; }
+.cal-cell.sel { border-color: var(--ink, #1a1a1a); }
+.cal-wx { font-size: 15px; line-height: 18px; min-height: 18px; }
+.cal-dots { display: flex; gap: 2px; min-height: 8px; }
+.cal-dots i, .cal-legend i { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+i.worn { background: transparent; border: 1.5px solid #1a1a1a; box-sizing: border-box; }
+.cal-legend { font-size: var(--fs-sm); color: var(--muted); margin: var(--sp-2) 0; }
+.cal-day { display: flex; flex-direction: column; gap: var(--sp-2); align-items: flex-start; }
+.cal-day p { margin: 0; }

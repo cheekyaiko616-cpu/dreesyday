@@ -36,6 +36,9 @@ export const SUBS = {
 };
 export const FORMALITY = [['casual', 'カジュアル'], ['neat', 'きれいめ'], ['formal', 'フォーマル']];
 export const EVENT_FORMALITY = [['casual', 'カジュアル'], ['neat', 'きれいめ'], ['formal', 'フォーマル'], ['sports', '観戦・アウトドア'], ['home', '家で過ごす']];
+// 柄と素材（AI判定でも入る。空は「無地」「その他」）
+export const PATTERNS = [['plain', '無地'], ['stripe', 'ストライプ'], ['check', 'チェック'], ['border', 'ボーダー'], ['dot', 'ドット'], ['print', '柄・プリント']];
+export const MATERIALS = [['other', 'その他'], ['cotton', '綿'], ['linen', '麻'], ['wool', 'ウール'], ['denim', 'デニム'], ['poly', 'ポリエステル'], ['nylon', 'ナイロン'], ['leather', 'レザー'], ['down', 'ダウン']];
 export const STATUS = [['active', '使える'], ['laundry', '洗濯中'], ['cleaning', 'クリーニング'], ['retired', 'しまっている']];
 
 // ワンタップ評価

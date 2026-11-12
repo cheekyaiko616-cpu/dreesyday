@@ -3,6 +3,8 @@
 import { el } from '../util/dom.js';
 import { state } from '../state.js';
 import { weatherLabel, daytimeFeels } from '../services/weather.js';
+import { daySwing } from '../engine/swing.js';
+import { RULES } from '../data/rules.js';
 
 function hoursStrip(hours, date) {
   const list = hours.filter((h) => h.date === date);
@@ -13,6 +15,13 @@ function hoursStrip(hours, date) {
       el('small', { text: `${h.hour}時` }), el('span', { 'aria-hidden': 'true', text: icon }),
       el('b', { text: `${h.temp}℃` }), el('small', { class: h.pop >= 50 ? 'wet' : '', text: `${h.pop}%` }));
   }));
+}
+
+function swingLine(hours, date) {
+  const s = daySwing(hours, date);
+  if (!s) return null;
+  const big = s.range >= RULES.swing.from;
+  return el('p', { class: 'wx-swing' + (big ? ' wet' : ''), text: `朝 ${s.morning}℃ → 昼 ${s.noon}℃ → 夜 ${s.night}℃${big ? `（差${s.range}℃。羽織れる上着があると安心）` : ''}` });
 }
 
 /** date: 表示する日。events: その日の予定。onSettings: 場所を設定する画面を開く。 */
@@ -38,7 +47,7 @@ export function weatherCard(date, events, onSettings) {
       el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
       el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
       el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
-    hoursStrip(w.home.hours, date));
+    hoursStrip(w.home.hours, date), swingLine(w.home.hours, date));
   // 予定の会場の天気
   const seen = new Set();
   events.forEach((ev) => {

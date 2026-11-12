@@ -35,6 +35,9 @@
     "item": { "single": 1, "analogous": 0.9, "complement": 0.85, "other": 0.45 },
     "total": { "none": 1, "one": 1, "analogous": 0.9, "complement": 0.85, "two_other": 0.4, "many": 0.2, "many_neutral": 0.35 }
   },
+  "pattern": { "_説明": "柄ものが重なったときの点数（柄ものの数→点数）", "two": 0.45, "three": 0.2, "weight": 0.1 },
+  "material": { "_説明": "季節に合わない素材の点数と、見る暖かさの境目", "hotFeels": 24, "coldFeels": 10, "hotHeavy": ["wool", "down"], "coldLight": ["linen"], "bad": 0.4, "weight": 0.1 },
+  "swing": { "_説明": "1日の気温差が大きい日は、上着がないコーデを少し下げる（朝晩の冷え対策）", "from": 8, "noOuterPenalty": 0.85 },
   "strict": { "_説明": "いちばん低い項目の点数を、総合点にどれだけ反映するか（0〜1）。ひとつでも合わない所があれば、全体の点も下がる", "weakest": 0.4 },
   "favoriteBonus": 0.05,
   "suggest": { "withEvents": 3, "noEvents": 2, "maxShared": 2, "prefilter": 8 },

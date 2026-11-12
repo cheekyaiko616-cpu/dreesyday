@@ -1,7 +1,7 @@
 // アイテムの登録・編集の画面（下から出る）。写真を選ぶと、主色・副色を自動で入れる（あとで直せる）。
 import { $, el, clear } from '../util/dom.js';
 import { mountSheet, showSheet, hideSheet } from './sheet.js';
-import { CATEGORIES, SUBS, FORMALITY, STATUS } from '../config.js';
+import { CATEGORIES, SUBS, FORMALITY, STATUS, PATTERNS, MATERIALS } from '../config.js';
 import { saveItem, removeItem, newItemId } from '../data/closet.js';
 import { storePhoto, storeCut, removeCut } from '../data/images.js';
 import { shrinkPhoto, guessColors } from '../services/photo.js';
@@ -38,7 +38,7 @@ const segValue = (root, name) => { const r = root.querySelector(`input[name="${n
 
 /** item: 編集するアイテム（新規は null）。 */
 export function openItemSheet(item) {
-  const d = item ? { ...item } : { category: 'tops', sub_category: 'other', warmth: 3, formality: 'casual', color_main: '#808080', color_sub: '', rain_ok: false, status: 'active', hasPhoto: false, hasCut: false, name: '' };
+  const d = item ? { ...item } : { category: 'tops', sub_category: 'other', warmth: 3, formality: 'casual', pattern: 'plain', material: 'other', color_main: '#808080', color_sub: '', rain_ok: false, status: 'active', hasPhoto: false, hasCut: false, name: '' };
   $('#it-heading').textContent = item ? 'アイテムを編集' : 'アイテムを追加';
   const body = $('#it-body');
   clear(body);
@@ -56,6 +56,8 @@ export function openItemSheet(item) {
   const warmthOut = el('output', { text: String(d.warmth) });
   const rain = el('input', { type: 'checkbox', checked: d.rain_ok || null });
   const subBox = el('div');
+  const pattern = el('select', { 'aria-label': '柄' }, PATTERNS.map(([v, l]) => el('option', { value: v, selected: v === d.pattern || null, text: l })));
+  const material = el('select', { 'aria-label': '素材' }, MATERIALS.map(([v, l]) => el('option', { value: v, selected: v === d.material || null, text: l })));
   const status = el('select', { 'aria-label': '状態' }, STATUS.map(([v, l]) => el('option', { value: v, selected: v === d.status || null, text: l })));
 
   let cutting = null; // 背景の切り抜き（保存の前に終わるのを待つ）
@@ -84,6 +86,8 @@ export function openItemSheet(item) {
     if (r.color_main) main.value = r.color_main;
     hasSub.checked = !!r.color_sub; sub.disabled = !r.color_sub; if (r.color_sub) sub.value = r.color_sub;
     if (r.warmth) { warmth.value = r.warmth; warmthOut.textContent = String(r.warmth); }
+    if (r.pattern) pattern.value = r.pattern;
+    if (r.material) material.value = r.material;
     if (r.formality) body.querySelectorAll('input[name="it-form"]').forEach((x) => { x.checked = x.value === r.formality; });
     if (typeof r.rain_ok === 'boolean') rain.checked = r.rain_ok;
     refreshPreview();
@@ -131,7 +135,7 @@ export function openItemSheet(item) {
       else { await removeCut(d.id); d.hasCut = false; }
     }
     await saveItem({ ...d, name: name.value.trim(), category: segValue(body, 'it-cat'), sub_category: segValue(body, 'it-sub'), warmth: +warmth.value,
-      formality: segValue(body, 'it-form'), color_main: main.value, color_sub: hasSub.checked ? sub.value : '', rain_ok: rain.checked, status: status.value, size: sizeInput.value.trim() });
+      formality: segValue(body, 'it-form'), color_main: main.value, color_sub: hasSub.checked ? sub.value : '', rain_ok: rain.checked, pattern: pattern.value, material: material.value, status: status.value, size: sizeInput.value.trim() });
     hideSheet(wrap);
     toast('保存しました');
   } });
@@ -160,6 +164,7 @@ export function openItemSheet(item) {
     field('暖かさ（1=薄手〜5=真冬）', el('div', { class: 'range-row' }, warmth, warmthOut)),
     el('datalist', { id: 'it-sizes' }, ['XS', 'S', 'M', 'L', 'XL', 'XXL', '28', '30', '32', '34', '36'].map((v) => el('option', { value: v }))),
     field('服装の格', seg('it-form', FORMALITY, d.formality)),
+    el('div', { class: 'two' }, field('柄', pattern), field('素材', material)),
     field('サイズ（S/M/L や 32 など。空でもOK）', sizeInput),
     el('label', { class: 'check' }, rain, '雨に強い（撥水・防水）'),
     field('状態', status),

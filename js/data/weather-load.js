@@ -6,6 +6,7 @@ import { locate, hasPlace } from '../services/geo.js';
 import { eventsOn } from './calendar-feed.js';
 import { todayIso, addDaysIso } from '../util/date.js';
 import { sampleForecast } from './sample.js';
+import { daySwing } from '../engine/swing.js';
 
 const get = (pos) => (__PREVIEW__ ? Promise.resolve(sampleForecast(pos)) : forecast(pos));
 
@@ -17,10 +18,10 @@ export async function loadWeather() {
   try {
     if (home) w.home = await get(home);
   } catch (e) { w.status = 'error'; }
-  // 今日・明日の予定の会場
+  // 1週間先までの予定の会場（多すぎると遅くなるので、最大6か所）
   const places = new Set();
-  [todayIso(), addDaysIso(todayIso(), 1)].forEach((d) => eventsOn(d).forEach((ev) => { if (hasPlace(ev.place)) places.add(ev.place); }));
-  for (const place of places) {
+  [0, 1, 2, 3, 4, 5, 6, 7].map((i) => addDaysIso(todayIso(), i)).forEach((d) => eventsOn(d).forEach((ev) => { if (hasPlace(ev.place)) places.add(ev.place); }));
+  for (const place of [...places].slice(0, 6)) {
     try {
       const pos = __PREVIEW__ ? { lat: 36.53, lon: 140.23, name: place } : await locate(place);
       w.venues[place] = pos ? { name: pos.name || place, data: await get(pos) } : null;
@@ -48,6 +49,7 @@ export function dayWeather(date, events) {
     pop: Math.max(...list.map((x) => x.d.pop)),
     wind: Math.max(...list.map((x) => x.d.wind)),
     code: pickCold.d.code, max: pickCold.d.max, min: pickCold.d.min,
-    from: list.map((x) => x.name)
+    from: list.map((x) => x.name),
+    swing: state.weather.home ? daySwing(state.weather.home.hours, date) : null // 朝・昼・夜の気温と差
   };
 }
