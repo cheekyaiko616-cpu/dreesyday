@@ -181,5 +181,16 @@ import { parseJudge } from '../js/engine/item-judge.js';
   ok(parseJudge({ category: 'shoes', sub: 'knit' }).sub === 'other', '種類に合わない細かい種類は「その他」');
   ok(Object.keys(parseJudge({ category: 'ufo', color_main: 'red' })).join() === 'color_sub', '使えない項目は入れない');
 }
+
+// Gemini: 使えないモデル(404)なら次のモデルを試す
+{
+  const real = globalThis.fetch; const urls = [];
+  globalThis.fetch = async (u) => { urls.push(u); return urls.length === 1 ? { ok: false, status: 404 } : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: 'OK' }] } }] }) }; };
+  ok((await askGemini('x', 'K')) === 'OK' && urls.length === 2 && urls[0] !== urls[1], '404なら次のモデルで試す');
+  globalThis.fetch = async (u) => { urls.push(u); return { ok: false, status: 404 }; };
+  const before = urls.length; let m = ''; try { await askGemini('x', 'K2'); } catch (e) { m = e.message; }
+  ok(m.includes('404') || m.length > 0, '全部404ならエラー'); void before;
+  globalThis.fetch = real;
+}
 if (failed) { console.log(`${failed} 件の失敗`); process.exit(1); }
 console.log('自動テスト: すべて成功');
