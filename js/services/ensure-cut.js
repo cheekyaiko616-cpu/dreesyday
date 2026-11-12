@@ -7,12 +7,15 @@ import { cutOut, cutoutSupported } from './cutout.js';
 
 let running = false;
 
+// 戻り値: { todo: 対象数, done: 切り抜けた数 }（すでに実行中なら null）
 export async function ensureCuts() {
-  if (running || !cutoutSupported()) return;
+  if (running || !cutoutSupported()) return null;
   running = true;
-  let changed = false;
+  let changed = false, done = 0, todo = 0;
   try {
-    for (const it of state.items.filter((x) => x.hasPhoto && !x.hasCut && x.category !== 'accessory')) {
+    const list = state.items.filter((x) => x.hasPhoto && !x.hasCut && x.category !== 'accessory');
+    todo = list.length;
+    for (const it of list) {
       try {
         const img = await photoImage(it.id);
         if (!img) continue;
@@ -24,8 +27,9 @@ export async function ensureCuts() {
         if (!now || now.category === 'accessory') continue;
         await storeCut(it.id, r.rgb, r.alpha);
         await saveItem({ ...now, hasCut: true }, { quiet: true });
-        changed = true;
+        changed = true; done++;
       } catch { /* 1つ失敗しても続ける */ }
     }
   } finally { running = false; if (changed) notify(); }
+  return { todo, done };
 }

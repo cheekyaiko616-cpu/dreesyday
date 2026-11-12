@@ -3,7 +3,7 @@
 // 画像は文字（data URL）ではなくバイト列のまま保存し、使うときだけ読み込む。
 import { get, put, del } from './db.js';
 
-const KINDS = ['photo', 'thumb', 'cut'];
+const KINDS = ['photo', 'thumb', 'cut', 'cthumb'];
 const key = (id, kind) => `${id}:${kind}`;
 const THUMB = { max: 360, quality: 0.82 };
 const CUT_JPEG = 0.92;
@@ -34,8 +34,8 @@ async function decodeBlobImage(rec) {
 }
 
 // ---- 読み出しの覚え書き（使ったものを少しだけ覚えておく） ----
-const memo = { thumb: new Map(), photo: new Map(), cut: new Map() };
-const LIMIT = { thumb: 400, photo: 24, cut: 16 };
+const memo = { thumb: new Map(), photo: new Map(), cut: new Map(), cthumb: new Map() };
+const LIMIT = { thumb: 400, photo: 24, cut: 16, cthumb: 400 };
 function remember(kind, id, promise, onDrop) {
   const m = memo[kind];
   promise.catch(() => { if (m.get(id) === promise) m.delete(id); }); // 失敗は覚えない（次にもう一度読む）
@@ -77,7 +77,8 @@ export async function storeCut(id, rgb, alpha) {
   ag.putImageData(ad, 0, 0);
   const [c, a] = await Promise.all([toBlob(rgb, 'image/jpeg', CUT_JPEG), toBlob(ac, 'image/png')]);
   await put('images', key(id, 'cut'), { rgb: await pack(c), a: await pack(a), w, h });
-  touch(id); memo.cut.delete(id);
+  await del('images', key(id, 'cthumb'));
+  touch(id); memo.cut.delete(id); memo.cthumb.delete(id);
 }
 
 /** 透明な所の色を、まわりの服の色でうめる（JPEG にしたとき、縁が黒ずまないように）。 */
@@ -110,7 +111,7 @@ export async function storeCutFromPng(id, dataUrl) {
   await storeCut(id, c, alpha);
 }
 
-export async function removeCut(id) { touch(id); memo.cut.delete(id); await del('images', key(id, 'cut')); }
+export async function removeCut(id) { touch(id); memo.cut.delete(id); memo.cthumb.delete(id); await del('images', key(id, 'cut')); await del('images', key(id, 'cthumb')); }
 
 export async function removeImages(id) {
   forget(id);
@@ -127,6 +128,26 @@ const dataUrlOf = async (id, kind) => {
 export const thumbURL = (id) => recall('thumb', id) || remember('thumb', id, dataUrlOf(id, 'thumb'));
 /** 写真（data URL）。 */
 export const photoURL = (id) => recall('photo', id) || remember('photo', id, dataUrlOf(id, 'photo'));
+
+/** 一覧用の切り抜き（服の部分だけを正方形に収めた透明PNG の data URL。無ければ ''）。初回だけ作って保存する。 */
+export const cutThumbURL = (id) => recall('cthumb', id) || remember('cthumb', id, (async () => {
+  const saved = await get('images', key(id, 'cthumb'));
+  if (saved) return packedToDataUrl(saved);
+  const c = await cutCanvas(id);
+  if (!c) return '';
+  const { width: w, height: h } = c;
+  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  if (x1 < 0) return '';
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1, side = Math.max(bw, bh) * 1.1, S = THUMB.max;
+  const out = mk(S, S), g = out.getContext('2d');
+  const k = S / side;
+  g.drawImage(c, x0, y0, bw, bh, (S - bw * k) / 2, (S - bh * k) / 2, bw * k, bh * k);
+  const packed = await pack(await toBlob(out, 'image/png'));
+  await put('images', key(id, 'cthumb'), packed);
+  return packedToDataUrl(packed);
+})());
 
 /** 切り抜き（透明）を canvas で返す。無ければ null。 */
 export function cutCanvas(id) {
@@ -186,7 +207,8 @@ export async function importImages(id, x) {
   }
   if (typeof x.cutRgb === 'string' && typeof x.cutAlpha === 'string' && x.cutW > 0 && x.cutH > 0) {
     await put('images', key(id, 'cut'), { rgb: dataUrlToPacked(x.cutRgb), a: dataUrlToPacked(x.cutAlpha), w: x.cutW, h: x.cutH });
-    touch(id); memo.cut.delete(id); hasCut = true;
+    await del('images', key(id, 'cthumb'));
+    touch(id); memo.cut.delete(id); memo.cthumb.delete(id); hasCut = true;
   } else if (typeof x.cut === 'string' && x.cut.startsWith('data:image/png')) { await storeCutFromPng(id, x.cut); hasCut = true; }
   return { hasPhoto, hasCut };
 }

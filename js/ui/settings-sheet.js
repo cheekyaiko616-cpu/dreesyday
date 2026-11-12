@@ -14,6 +14,8 @@ import { geminiKey, saveGeminiKey } from '../data/gemini-key.js';
 import { locate, whereAmI } from '../services/geo.js';
 import { toast } from './toast.js';
 import { openDetail } from './settings-detail.js';
+import { ensureCuts } from '../services/ensure-cut.js';
+import { cutoutSupported } from '../services/cutout.js';
 
 const MARKUP = `
   <div class="sheet" id="st-sheet" role="dialog" aria-modal="true" aria-labelledby="st-heading">
@@ -100,6 +102,8 @@ function tabGroup() {
     }));
 }
 
+const running_msg = () => cutoutSupported() ? 'すでに切り抜き中です' : 'この端末では切り抜きが使えません';
+
 function dataGroup(done) {
   const file = el('input', { type: 'file', accept: 'application/json,.json', class: 'visually-hidden', id: 'st-file' });
   const confirm = el('div', { class: 'confirm-box', hidden: true });
@@ -130,6 +134,12 @@ function dataGroup(done) {
         setTimeout(() => URL.revokeObjectURL(url), 30000);
       } }),
       el('label', { class: 'btn', for: 'st-file', text: '読み込む' }), file),
+    el('button', { type: 'button', class: 'btn', text: '登録済みの服を切り抜く', onclick: async (e) => {
+      const b = e.currentTarget; b.disabled = true; b.textContent = '切り抜き中…';
+      const r = await ensureCuts();
+      b.disabled = false; b.textContent = '登録済みの服を切り抜く';
+      toast(!r ? (running_msg()) : r.todo === 0 ? '切り抜く服はありません（すべて済み）' : `${r.done}/${r.todo}件を切り抜きました`);
+    } }),
     confirm,
     el('button', { type: 'button', class: 'btn', text: '学習をはじめからにする', onclick: async () => { await resetLearning(); toast('学習をはじめからにしました'); } }),
     __PREVIEW__ ? el('button', { type: 'button', class: 'btn', text: '見本を入れ直す（確認用）', onclick: async () => {

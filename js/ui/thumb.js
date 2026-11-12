@@ -1,7 +1,7 @@
 // アイテムの小さな絵：写真があれば写真、無ければ主色・副色の色見本。
 import { el } from '../util/dom.js';
 import { CATEGORIES } from '../config.js';
-import { thumbURL } from '../data/images.js';
+import { thumbURL, cutThumbURL } from '../data/images.js';
 
 const catLabel = (c) => (CATEGORIES.find((x) => x.id === c) || { label: '' }).label;
 
@@ -18,7 +18,7 @@ export function thumbEl(item, size = 'm') {
   if (item.hasPhoto && item.id) {
     swatch(); // 写真が届くまでは色見本を出しておく
     const img = el('img', { alt: item.name || catLabel(item.category), decoding: 'async' });
-    thumbURL(item.id).then((u) => { if (!u) return; img.onload = () => { box.replaceChildren(img); box.style.background = ''; }; img.src = u; }).catch(() => {});
+    (item.hasCut ? cutThumbURL(item.id).then((u) => u || thumbURL(item.id)) : thumbURL(item.id)).then((u) => { if (!u) return; img.onload = () => { box.replaceChildren(img); box.style.background = ''; }; img.src = u; }).catch(() => {});
   } else swatch();
   return box;
 }
