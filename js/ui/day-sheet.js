@@ -6,6 +6,7 @@ import { eventsOn } from '../data/calendar-feed.js';
 import { wearOn, fitOf } from '../data/learning.js';
 import { weatherLabel } from '../services/weather.js';
 import { addDaysIso, todayIso, mdLong } from '../util/date.js';
+import { venueWeather } from './events-card.js';
 import { fitRow } from './outfit-card.js';
 import { onHSwipe, slideIn } from './gestures.js';
 
@@ -29,7 +30,8 @@ export function dayPanel(day) {
       el('span', { class: 'chip', text: ev.tab || '予定' }),
       el('div', null, el('p', { class: 'ev-title', text: ev.title }),
         ev.place ? el('p', { class: 'ev-meta', text: ev.place }) : null,
-        ev.open || ev.start ? el('p', { class: 'ev-meta', text: [ev.open && `開場 ${ev.open}`, ev.start && `開演 ${ev.start}`].filter(Boolean).join('　') }) : null))))
+        ev.open || ev.start ? el('p', { class: 'ev-meta', text: [ev.open && `開場 ${ev.open}`, ev.start && `開演 ${ev.start}`].filter(Boolean).join('　') }) : null,
+        venueWeather(ev, day)))))
       : el('p', { class: 'muted', text: 'この日の予定はありません。' }),
     rec ? el('h3', { class: 'card-title', text: '着たコーデ' }) : null,
     rec ? fitRow(fitOf(rec.items)) : null,

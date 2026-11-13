@@ -3,9 +3,19 @@ import { el } from '../util/dom.js';
 import { state } from '../state.js';
 import { md } from '../util/date.js';
 import { EVENT_FORMALITY } from '../config.js';
+import { weatherLabel, daytimeFeels } from '../services/weather.js';
 import { formalityOf } from '../data/calendar-feed.js';
 
 const fLabel = (k) => (EVENT_FORMALITY.find((x) => x[0] === k) || ['', ''])[1];
+
+/** 予定の会場のその日の天気（取れているときだけ）。 */
+export function venueWeather(ev, date) {
+  const v = state.weather.venues[ev.place];
+  const d = v && v.data.days[date];
+  if (!d) return null;
+  const x = weatherLabel(d.code);
+  return el('p', { class: 'ev-wx', text: `${x.icon} 会場 ${d.max}℃/${d.min}℃　体感${Math.round(daytimeFeels(d))}℃　降水${d.pop}%` });
+}
 
 export function eventsCard(date, events) {
   const c = state.calendar;
@@ -21,6 +31,7 @@ export function eventsCard(date, events) {
       el('p', { class: 'ev-meta', text: [
         ev.from === ev.to ? '' : `${md(ev.from)}〜${md(ev.to)}`,
         ev.place, ev.open ? `開場 ${ev.open}` : '', ev.start ? `開演 ${ev.start}` : '', `服装：${fLabel(formalityOf(ev))}`
-      ].filter(Boolean).join('　') }))))));
+      ].filter(Boolean).join('　') }),
+      venueWeather(ev, date))))));
   return box;
 }

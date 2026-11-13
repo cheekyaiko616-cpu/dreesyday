@@ -10,7 +10,7 @@ export const state = {
   checks: {},          // 持ち物チェック { 'YYYY-MM-DD': { 名前: true } }
   calendar: { status: 'loading', items: [], at: '' }, // Event list の「カレンダーに追加した予定」
   weather: { status: 'loading', home: null, venues: {} }, // 天気（自宅と、今日・明日の予定の会場）
-  ui: { closetFilter: 'all', closetQuery: '', closetSort: 'new', closetView: 'list', closetUnworn: false, briefDate: null, calMonth: '', calSel: '', bringOpen: '', builder: null }
+  ui: { closetFilter: 'all', closetQuery: '', closetSort: 'new', closetView: 'list', wxAway: 0, wxMode: 'home', closetUnworn: false, briefDate: null, calMonth: '', calSel: '', bringOpen: '', builder: null }
 };
 
 const listeners = new Set();

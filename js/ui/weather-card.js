@@ -2,7 +2,7 @@
 // 予定の会場があれば、会場の天気も1行で出す。
 import { loadWeather } from '../data/weather-load.js';
 import { el } from '../util/dom.js';
-import { state } from '../state.js';
+import { state, notify } from '../state.js';
 import { weatherLabel, daytimeFeels } from '../services/weather.js';
 import { daySwing } from '../engine/swing.js';
 import { RULES } from '../data/rules.js';
@@ -41,32 +41,37 @@ export function weatherCard(date, events, onSettings) {
       el('button', { class: 'btn', type: 'button', text: '再読み込み', onclick: () => loadWeather() }));
     return box;
   }
-  const { icon, label } = weatherLabel(d.code);
   box.firstChild.remove(); // 通常時は見出しを省いて、場所と今の天気だけ出す
+  // 現在地（自宅）と出先（予定の会場）を、1操作で切り替える
+  const away = [];
+  const seen = new Set();
+  (events || []).forEach((ev) => {
+    const v = w.venues[ev.place];
+    if (!v || seen.has(ev.place) || !v.data.days[date]) return;
+    seen.add(ev.place); away.push({ name: v.name, d: v.data.days[date], color: ev.color });
+  });
+  const useAway = state.ui.wxMode === 'away' && away.length > 0;
+  const cur = useAway ? away[state.ui.wxAway % away.length] : null;
+  const dd = cur ? cur.d : d;
+  const { icon, label } = weatherLabel(dd.code);
+  const seg = el('div', { class: 'seg-bar wx-seg' },
+    el('button', { type: 'button', class: 'seg-btn' + (!useAway ? ' on' : ''), 'aria-pressed': String(!useAway), text: '現在地',
+      onclick: () => { state.ui.wxMode = 'home'; notify(); } }),
+    el('button', { type: 'button', class: 'seg-btn' + (useAway ? ' on' : ''), 'aria-pressed': String(useAway), disabled: away.length ? null : '', // 出先が複数なら、押すたびに次の出先へ
+      text: away.length > 1 ? `出先 ${useAway ? (state.ui.wxAway % away.length) + 1 : 1}/${away.length}` : '出先',
+      onclick: () => { state.ui.wxAway = state.ui.wxMode === 'away' ? state.ui.wxAway + 1 : 0; state.ui.wxMode = 'away'; notify(); } }));
   box.append(
     el('div', { class: 'wx-main' },
       el('span', { class: 'wx-icon', 'aria-hidden': 'true', text: icon }),
-      el('div', null,
-        el('p', { class: 'wx-place', text: w.homeName }),
-        el('p', { class: 'wx-temp' }, el('b', { text: `${d.max}℃` }), el('span', { text: ` / ${d.min}℃　${label}` })))),
-    el('details', { class: 'more' }, el('summary', { text: '1時間ごとの天気・くわしく' }),
+      el('div', { class: 'wx-body' },
+        el('p', { class: 'wx-place', text: cur ? cur.name : w.homeName }),
+        el('p', { class: 'wx-temp' }, el('b', { text: `${dd.max}℃` }), el('span', { text: ` / ${dd.min}℃　${label}` }))),
+      seg),
+    el('details', { class: 'more' }, el('summary', { text: cur ? 'くわしく' : '1時間ごとの天気・くわしく' }),
       el('ul', { class: 'wx-facts' },
-        el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
-        el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
-        el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
-      hoursStrip(w.home.hours, date), swingLine(w.home.hours, date)));
-  // 予定の会場の天気
-  const seen = new Set();
-  events.forEach((ev) => {
-    if (seen.has(ev.place)) return;
-    seen.add(ev.place);
-    const v = w.venues[ev.place];
-    const vd = v && v.data.days[date];
-    if (!vd) return;
-    const x = weatherLabel(vd.code);
-    box.append(el('p', { class: 'wx-venue' },
-      el('span', { class: 'chip', style: `--c:${ev.color}`, text: '会場' }),
-      ` ${v.name}　${x.icon} ${vd.max}℃/${vd.min}℃　体感${Math.round(daytimeFeels(vd))}℃　降水${vd.pop}%`));
-  });
+        el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(dd))}℃` })),
+        el('li', null, el('small', { text: '降水' }), el('b', { class: dd.pop >= 50 ? 'wet' : '', text: `${dd.pop}%` })),
+        el('li', null, el('small', { text: '風' }), el('b', { text: `${dd.wind}m/s` }))),
+      cur ? null : hoursStrip(w.home.hours, date), cur ? null : swingLine(w.home.hours, date)));
   return box;
 }

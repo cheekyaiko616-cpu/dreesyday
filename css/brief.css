@@ -114,3 +114,11 @@
 .outfit.day-from-right { animation: dayFromRight .22s ease; }
 .outfit.day-from-left { animation: dayFromLeft .22s ease; }
 .sect { touch-action: pan-y; }
+
+.ev-wx { margin: 2px 0 0; font-size: var(--fs-cap); color: var(--ink); }
+.wx-main { display: flex; align-items: center; gap: var(--sp-3); }
+.wx-body { flex: 1; min-width: 0; }
+.wx-seg { flex: none; }
+.wx-seg .seg-btn { min-height: 32px; min-width: 0; font-size: var(--fs-cap); padding: 0 10px; white-space: nowrap; }
+.wx-seg .seg-btn[disabled] { opacity: .4; }
+.wx-place, .wx-temp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
