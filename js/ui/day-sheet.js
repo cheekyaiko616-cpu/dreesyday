@@ -6,7 +6,7 @@ import { eventsOn } from '../data/calendar-feed.js';
 import { wearOn, fitOf } from '../data/learning.js';
 import { weatherLabel } from '../services/weather.js';
 import { addDaysIso, todayIso, mdLong } from '../util/date.js';
-import { venueWeather } from './events-card.js';
+import { eventList } from './events-card.js';
 import { fitRow } from './outfit-card.js';
 import { onHSwipe, slideIn } from './gestures.js';
 
@@ -26,12 +26,7 @@ export function dayPanel(day) {
       el('h2', { text: mdLong(day) }),
       el('button', { type: 'button', class: 'btn', 'aria-label': '次の日', text: '›', onclick: () => go(1) })),
     w ? el('p', { class: 'dy-wx', text: `${weatherLabel(w.code).icon} ${weatherLabel(w.code).label}　${w.max}℃ / ${w.min}℃　降水${w.pop}%` }) : null,
-    evs.length ? el('ul', { class: 'ev-list' }, evs.map((ev) => el('li', { class: 'ev-row', style: `--c:${ev.color}` },
-      el('span', { class: 'chip', text: ev.tab || '予定' }),
-      el('div', null, el('p', { class: 'ev-title', text: ev.title }),
-        ev.place ? el('p', { class: 'ev-meta', text: ev.place }) : null,
-        ev.open || ev.start ? el('p', { class: 'ev-meta', text: [ev.open && `開場 ${ev.open}`, ev.start && `開演 ${ev.start}`].filter(Boolean).join('　') }) : null,
-        venueWeather(ev, day)))))
+    evs.length ? eventList(evs)
       : el('p', { class: 'muted', text: 'この日の予定はありません。' }),
     rec ? el('h3', { class: 'card-title', text: '着たコーデ' }) : null,
     rec ? fitRow(fitOf(rec.items)) : null,
