@@ -58,9 +58,12 @@ async function start() {
 
 // 日付が変わったら（朝アプリを開き直したとき）、予定と天気を取り直す
 let day = todayIso();
+let calAt = Date.now(); // 予定を最後に読んだ時刻
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
-  if (todayIso() !== day) { day = todayIso(); const cal = loadCalendar(); loadWeather(cal); }
+  if (todayIso() !== day) { day = todayIso(); calAt = Date.now(); const cal = loadCalendar(); loadWeather(cal); return; }
+  // Event list で予定を足して戻ってきたときのために、画面に戻るたび（30秒以上たっていれば）予定だけ読み直す。小さなファイル1つだけ
+  if (Date.now() - calAt > 30000) { calAt = Date.now(); const cal = loadCalendar(); loadWeather(cal); } // 新しい予定の会場の天気も取る（取得済みの天気は使い回す）
 });
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -1,7 +1,7 @@
 // 天気を読み込む：設定した場所（自宅など）と、今日・明日の予定の会場。
 // 服装の判定には、両方のうち「寒いほう・雨が多いほう」を使う（出かける先で困らないように）。
 import { state, notify } from '../state.js';
-import { forecast, daytimeFeels } from '../services/weather.js';
+import { forecast, cachedForecast, daytimeFeels } from '../services/weather.js';
 import { locate, hasPlace } from '../services/geo.js';
 import { eventsOn } from './calendar-feed.js';
 import { todayIso, addDaysIso } from '../util/date.js';
@@ -13,11 +13,14 @@ const get = (pos, light) => (__PREVIEW__ ? Promise.resolve(sampleForecast(pos)) 
 export async function loadWeather(calendarReady) {
   const home = state.settings.home || (__PREVIEW__ ? { name: '名古屋（見本）', lat: 35.17, lon: 136.88 } : null);
   const w = { status: 'loading', home: null, homeName: home ? home.name : '', venues: {} };
+  // 前回の天気が残っていれば、読み込み中にせず、すぐ出す（新しい天気は裏で取り直して差し替える）
+  const old = home && !__PREVIEW__ ? cachedForecast(home) : null;
+  if (old && old.days && old.days[todayIso()]) { w.home = old; w.status = 'ok'; }
   state.weather = w;
   notify();
   try {
     if (home) w.home = await get(home);
-  } catch (e) { w.status = 'error'; w.error = (e && e.message) || ''; }
+  } catch (e) { if (!w.home) { w.status = 'error'; w.error = (e && e.message) || ''; } }
   // 自宅の天気が読めたら、すぐ表示する（会場の天気を待たない）
   if (w.status !== 'error') w.status = home ? 'ok' : 'nohome';
   notify();

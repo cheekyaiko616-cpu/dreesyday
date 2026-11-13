@@ -20,6 +20,9 @@ export function weatherLabel(code) {
 /** 体感温度の最高・最低から、日中の体感（服装の目安）を出す。 */
 export const daytimeFeels = (d) => Math.round((d.feelMin + (d.feelMax - d.feelMin) * 0.6) * 10) / 10;
 
+/** 前に取れた天気（古くてもよい）。無ければ undefined。開いた直後に、読み込み中ではなく前回の天気をすぐ出すために使う。 */
+export const cachedForecast = (pos) => cacheGet('wx', `${pos.lat.toFixed(2)},${pos.lon.toFixed(2)}`, Infinity);
+
 /**
  * 場所(lat/lon)の今日から8日分（1週間先まで）と、1時間ごと。通信できなければ例外。
  * 返す: { days: { 'YYYY-MM-DD': { code, max, min, feelMax, feelMin, pop, wind } }, hours: [{ date, hour, code, temp, pop }] }
