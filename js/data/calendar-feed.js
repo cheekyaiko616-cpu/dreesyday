@@ -14,7 +14,7 @@ function clean(list) {
   return (Array.isArray(list) ? list : []).filter((x) => x && ISO.test(x.from) && ISO.test(x.to) && x.title).map((x) => ({
     id: str(x.id, 120), title: str(x.title, 100), from: x.from, to: x.to >= x.from ? x.to : x.from,
     place: str(x.place, 100), tab: str(x.tab, 20), color: HEX.test(x.color) ? x.color : '#475569',
-    open: str(x.open, 5), start: str(x.start, 5)
+    open: str(x.open, 5), start: str(x.start, 5), note: str(x.note, 400)
   }));
 }
 

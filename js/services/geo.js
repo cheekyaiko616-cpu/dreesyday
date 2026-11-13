@@ -15,7 +15,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 export async function locate(place) {
   if (!hasPlace(place)) return null;
   const v = VENUES.find((x) => place.includes(x.match));
-  if (v) return { lat: v.lat, lon: v.lon, name: v.name };
+  if (v) return { lat: v.lat, lon: v.lon, name: v.name, station: v.station, stationKm: v.stationKm };
   const hit = cacheGet('geo', place, WX.geoTtl);
   if (hit !== undefined) return hit;
   const gap = 1100 - (Date.now() - last);

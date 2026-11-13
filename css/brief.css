@@ -126,10 +126,31 @@
 button.ev-row { width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
 button.ev-row::after { content: '›'; margin-left: auto; color: var(--muted); font-size: 20px; align-self: center; }
 
-/* 予定を押すと、Event list のその予定に移る */
-a.ev-link { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-3); border-left: 4px solid var(--c); text-decoration: none; color: inherit; min-height: 44px; }
-a.ev-link .chip { background: var(--c); flex: none; }
-a.ev-link .ev-main { flex: 1; min-width: 0; }
-a.ev-link .ev-title { margin: 0; }
-a.ev-link .ev-meta { margin: 0; white-space: normal; }
-a.ev-link::after { content: '›'; color: var(--muted); font-size: 22px; flex: none; }
+/* 予定を押すと、その場で開く（日程・場所・メモ／乗り換え・ナビ・マップ） */
+.ev-item { border-left: 4px solid var(--c); }
+.ev-sum { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-3); min-height: 44px; list-style: none; cursor: pointer; }
+.ev-sum::-webkit-details-marker { display: none; }
+.ev-sum .chip { background: var(--c); flex: none; }
+.ev-sum .ev-main { flex: 1; min-width: 0; }
+.ev-sum .ev-title { margin: 0; }
+.ev-sum .ev-meta { margin: 0; white-space: normal; }
+.ev-sum::after { content: '▼'; color: var(--muted); font-size: 11px; flex: none; transition: transform .15s; }
+.ev-item[open] .ev-sum::after { transform: rotate(180deg); }
+.ev-detail { padding: 0 var(--sp-3) var(--sp-3); }
+.ev-detail .kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-2) var(--sp-3); margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
+.ev-detail .kv dt { padding-top: 2px; color: var(--muted); font-size: var(--fs-cap); white-space: nowrap; }
+.ev-detail .kv dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.ev-detail .actions { margin-top: var(--sp-2); }
+.ev-detail .actions .btn { flex: 1 1 0; min-height: 40px; }
+.tform { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.tform .help { margin: 0; color: var(--muted); font-size: var(--fs-sm); }
+.tform .help:empty, .tform .err:empty { display: none; }
+.tform .err { margin: 0; color: var(--danger); font-size: var(--fs-sm); }
+.tr-row { display: flex; gap: 8px; align-items: flex-end; }
+.tr-row .field { flex: 1 1 0; margin-top: 0; }
+.tr-row .btn { flex: none; min-height: 44px; }
+.tform .field.flush { margin-top: 0; }
+.tform .btn.wide { width: 100%; min-height: 48px; }
+.tform .chips { margin: 0; }
+.tform .pick { flex-direction: row; width: auto; gap: 4px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-m); background: var(--surface); font-size: var(--fs-sm); }
+.tform .pick small { width: auto; font-size: var(--fs-cap); }

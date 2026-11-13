@@ -9,7 +9,7 @@ export function sampleCalendar() {
   const t = todayIso();
   return [
     { id: 's1', title: 'SUPER GT 第8戦 もてぎ', from: t, to: addDaysIso(t, 1), place: 'モビリティリゾートもてぎ', tab: 'スーパーGT', color: '#c2410c', open: '', start: '' },
-    { id: 's2', title: 'Ado ライブ', from: addDaysIso(t, 1), to: addDaysIso(t, 1), place: '有明アリーナ', tab: 'Ado', color: '#3a4cc4', open: '17:00', start: '18:00' }
+    { id: 's2', title: 'Ado ライブ', from: addDaysIso(t, 1), to: addDaysIso(t, 1), place: '有明アリーナ', tab: 'Ado', color: '#3a4cc4', open: '17:00', start: '18:00', note: '開場17:00 / 開演18:00\nグッズ販売は14時から' }
   ];
 }
 

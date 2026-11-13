@@ -5,6 +5,12 @@ export const APP = { id: 'morning-brief', name: 'Dressy Day', schema: 1 };
 // Event list アプリの場所（予定の詳細を開くときに使う）
 export const EVENT_LIST_URL = 'https://cheekyaiko616-cpu.github.io/event-list/';
 
+// 乗り換え・ナビ（Event list と同じ。タップで外のアプリ／ページが開く）
+export const TRIP = {
+  transit: 'https://transit.yahoo.co.jp/search/result',
+  carnaviScheme: 'yjcarnavi://navi/select'
+};
+
 export const CALENDAR = {
   url: 'https://cheekyaiko616-cpu.github.io/event-list/calendar.json',
   cacheKey: 'morningbrief.calendar.v1' // 最後に読めた内容（通信できないときに使う）

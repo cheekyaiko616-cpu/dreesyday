@@ -21,6 +21,7 @@ import { renderFavorites } from './ui/favorites-page.js';
 import { initItemSheet } from './ui/item-sheet.js';
 import { initFavSheet } from './ui/fav-sheet.js';
 import { initMonthWheel } from './ui/month-wheel.js';
+import { initTransitSheet } from './ui/transit-sheet.js';
 import { initSettingsSheet } from './ui/settings-sheet.js';
 import { initSettingsDetail } from './ui/settings-detail.js';
 import { todayIso } from './util/date.js';
@@ -42,6 +43,7 @@ async function start() {
   initFavSheet();
   initMonthWheel();
   initSettingsSheet();
+  initTransitSheet();
   initSettingsDetail();
   try { // 読み込みに失敗しても、画面は出す（空の状態で動く）
     await Promise.all([loadSettings(), loadItems(), loadFavorites(), loadLearning(), loadChecks(), loadGeminiKey(), loadReviews(), loadBackupInfo()]);
