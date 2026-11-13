@@ -99,11 +99,8 @@ import { binarize, largestBlob, fillHoles, feather } from '../js/services/mask.j
 }
 
 // 体型とサイズ感
-import { bodyDims, parseSize, sizeFeel } from '../js/engine/fit.js';
+import { parseSize, sizeFeel } from '../js/engine/fit.js';
 {
-  ok(bodyDims(null).ws === 1, '未登録なら標準の体');
-  ok(bodyDims({ height: 185, weight: 70 }).S > bodyDims({ height: 160, weight: 50 }).S, '背が高いほど大きい');
-  ok(bodyDims({ height: 170, weight: 90 }).ws > bodyDims({ height: 170, weight: 55 }).ws, '体重が重いほど幅が広い');
   ok(parseSize('xl').n === 4 && parseSize('32').kind === 'inch' && parseSize('abc') === null, 'サイズ表記を読む');
   ok(sizeFeel({ size: 'L' }, { top: 'M' }).wk > 1 && sizeFeel({ size: 'S' }, { top: 'M' }).wk < 1, 'ひとつ大きいとゆったり');
   ok(sizeFeel({ size: 'M' }, { top: 'M' }).wk === 1 && sizeFeel({ size: 'M' }, {}).wk === 1, '同じサイズ／未登録は等倍');

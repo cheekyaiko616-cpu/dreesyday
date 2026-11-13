@@ -1,8 +1,9 @@
 // オフラインでも開けるように、アプリの部品を端末に保存する。天気・予定は保存しない（毎回取りに行く）。
+// 切り抜きのモデル（2MB超）は、初めて使ったときに保存する（最初に開くときの通信を減らすため）。
 // ファイルを追加・削除したら ASSETS を直し、CACHE の番号を上げる。
-const CACHE = 'morning-brief-v2';
+const CACHE = 'morning-brief-v3';
 const ASSETS = ['./', 'index.html', 'dist/app.min.js', 'dist/app.min.css', 'manifest.webmanifest',
-  'fonts/BarlowCondensed-600.woff', 'fonts/CormorantGaramond-500-italic.woff', 'models/u2netp.json', 'models/u2netp.f16', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
+  'fonts/BarlowCondensed-600.woff', 'fonts/CormorantGaramond-500-italic.woff', 'icons/icon-192.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

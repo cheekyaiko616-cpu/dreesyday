@@ -139,7 +139,7 @@ function dataGroup(done) {
       el('label', { class: 'btn', for: 'st-file', text: '読み込む' }), file),
     el('button', { type: 'button', class: 'btn', text: '登録済みの服を切り抜く', onclick: async (e) => {
       const b = e.currentTarget; b.disabled = true; b.textContent = '切り抜き中…';
-      const r = await ensureCuts();
+      const r = await ensureCuts(true); // 手動のときは、前に失敗したものも試し直す
       b.disabled = false; b.textContent = '登録済みの服を切り抜く';
       toast(!r ? (running_msg()) : r.todo === 0 ? '切り抜く服はありません（すべて済み）' : `${r.done}/${r.todo}件を切り抜きました`);
     } }),

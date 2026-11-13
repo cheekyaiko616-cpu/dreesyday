@@ -8,7 +8,7 @@ import { todayIso, addDaysIso } from '../util/date.js';
 import { sampleForecast } from './sample.js';
 import { daySwing } from '../engine/swing.js';
 
-const get = (pos) => (__PREVIEW__ ? Promise.resolve(sampleForecast(pos)) : forecast(pos));
+const get = (pos, light) => (__PREVIEW__ ? Promise.resolve(sampleForecast(pos)) : forecast(pos, light));
 
 export async function loadWeather(calendarReady) {
   const home = state.settings.home || (__PREVIEW__ ? { name: '名古屋（見本）', lat: 35.17, lon: 136.88 } : null);
@@ -24,13 +24,14 @@ export async function loadWeather(calendarReady) {
   try { if (calendarReady) await calendarReady; } catch { /* 予定が読めなくても続ける */ }
   if (state.weather !== w) return;
   // 1週間先までの予定の会場は、あとから1か所ずつ足していく（多すぎると遅いので最大6か所。近い日の予定が先）
-  const places = new Set();
-  [0, 1, 2, 3, 4, 5, 6, 7].map((i) => addDaysIso(todayIso(), i)).forEach((d) => eventsOn(d).forEach((ev) => { if (hasPlace(ev.place)) places.add(ev.place); }));
-  for (const place of [...places].slice(0, 6)) {
+  // 会場ごとに、予定がある一番遠い日までの分だけ取る（1時間ごとの天気は取らない）
+  const places = new Map();
+  [0, 1, 2, 3, 4, 5, 6, 7].forEach((i) => eventsOn(addDaysIso(todayIso(), i)).forEach((ev) => { if (hasPlace(ev.place)) places.set(ev.place, i + 1); }));
+  for (const [place, need] of [...places].slice(0, 6)) {
     if (state.weather !== w) return; // 読み直しが始まっていたら、古いほうは打ち切る
     try {
       const pos = __PREVIEW__ ? { lat: 36.53, lon: 140.23, name: place } : await locate(place);
-      w.venues[place] = pos ? { name: pos.name || place, data: await get(pos) } : null;
+      w.venues[place] = pos ? { name: pos.name || place, data: await get(pos, need) } : null;
     } catch (e) { w.venues[place] = null; }
     notify();
   }

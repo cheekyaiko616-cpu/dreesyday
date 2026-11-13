@@ -1,21 +1,7 @@
-// 体型とサイズ感（計算だけ）。身長・体重から体の大きさを、服のサイズ表記と自分のサイズの差から着丈・身幅の比を決める。
+// サイズ感（計算だけ）。服のサイズ表記と自分のサイズの差から、着丈・身幅の比を決める。
 
 export const LETTERS = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-export const REF_HEIGHT = 172;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-
-/** body: { height, weight, top, waist }（空の項目は標準として扱う）。返す: { S, ws } 全体の縮尺と体の横幅の比 */
-export function bodyDims(body) {
-  const b = body || {};
-  const h = b.height > 0 ? b.height : REF_HEIGHT;
-  const S = 0.94 * clamp(h / REF_HEIGHT, 0.88, 1.12) / 1.0;
-  let ws = 1;
-  if (b.height > 0 && b.weight > 0) {
-    const bmi = b.weight / ((b.height / 100) ** 2);
-    ws = clamp(1 + (bmi - 21.5) * 0.03, 0.88, 1.2);
-  }
-  return { S: Math.min(S, 1.0), ws };
-}
 
 /** サイズ表記 → { kind: 'letter', n } か { kind: 'inch', n }。読めなければ null */
 export function parseSize(text) {

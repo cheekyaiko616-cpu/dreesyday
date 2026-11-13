@@ -21,5 +21,3 @@ export function wearHistory(wears, date) {
   });
   return { count, ago, total };
 }
-/** 一覧に出す、アイテムごとの着用情報。 */
-export function itemWear(h, id) { return { count: h.count[id] || 0, ago: h.ago[id] === undefined ? null : h.ago[id] }; }

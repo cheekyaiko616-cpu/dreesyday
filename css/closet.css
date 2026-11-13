@@ -34,3 +34,6 @@
 .closet-tools select { width: auto; }
 .closet-tools { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; margin-bottom: var(--sp-3); }
 .closet-tools .search { flex: 1 1 140px; min-width: 0; }
+
+/* 画面の外にあるアイテムは描画を後回しにして、一覧を軽くする */
+.grid-item { content-visibility: auto; contain-intrinsic-size: auto 150px; }
