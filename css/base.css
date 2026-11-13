@@ -94,3 +94,4 @@ input[type="color"]:disabled { opacity: .35; }
   max-width: calc(100% - 32px); padding: var(--sp-2) var(--sp-4); border-radius: var(--r-pill);
   background: var(--ink); color: var(--on-ink); font-size: var(--fs-sm); box-shadow: var(--sh-strong);
 }
+#app-nav { touch-action: pan-y; }

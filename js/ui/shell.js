@@ -16,19 +16,23 @@ const ICONS = {
 };
 const NAV = [['brief', 'ブリーフ'], ['calendar', 'カレンダー'], ['closet', 'クローゼット'], ['builder', 'コーデ'], ['favorites', 'お気に入り'], ['settings', '設定']];
 
+let swiped = 0;
 const TABS = NAV.map((x) => x[0]).filter((x) => x !== 'settings');
 
 export function initShell() {
   $('#app-header').append(el('p', { class: 'brand', text: 'Dressy Day' }));
   // 画面を左右にスワイプすると、タブを切り替える（自分でスワイプを使う場所・横に動く場所・開いている画面の上では動かない）
   const main = $('#app-main');
-  onHSwipe(main, (dir) => {
+  const go = (dir) => {
     if (document.documentElement.classList.contains('lock')) return;
     const i = TABS.indexOf(state.screen) + dir;
     if (i < 0 || i >= TABS.length) return;
+    swiped = Date.now(); // スワイプのあとに、指を離した所のボタンが押されたことにならないようにする
     state.screen = TABS[i]; main.scrollTop = 0; notify();
     requestAnimationFrame(() => requestAnimationFrame(() => slideIn(main, dir)));
-  }, '[data-swipe], .picker, .filters, .hours, .wheel, input, textarea, select');
+  };
+  onHSwipe($('#app-nav'), go); // タブバーの上でも、スワイプで切り替える（触れただけでは動かず、離したときに決まる）
+  onHSwipe(main, go, '[data-swipe], .picker, .filters, .hours, .wheel, input, textarea, select');
 }
 
 export function renderNav() {
@@ -41,6 +45,7 @@ export function renderNav() {
     nav.append(el('button', {
       type: 'button', class: 'nav-btn' + (on ? ' on' : ''), 'aria-label': label, title: label, 'aria-current': on ? 'page' : null,
       onclick: () => {
+        if (Date.now() - swiped < 400) return; // 直前のスワイプの続きは無視
         if (id === 'settings') { openSettings(); return; } // 設定は全画面の画面として開く
         if (on) return;
         state.screen = id; $('#app-main').scrollTop = 0; notify();
