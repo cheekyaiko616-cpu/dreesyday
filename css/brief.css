@@ -76,3 +76,8 @@
 .cal-legend span { display: inline-flex; align-items: center; gap: 4px; }
 @keyframes dayFromRight { from { opacity: .4; transform: translateX(28px); } to { opacity: 1; transform: none; } }
 @keyframes dayFromLeft { from { opacity: .4; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+.cal-cell.sel { border-color: var(--ink); }
+.day-panel { margin-top: var(--sp-3); touch-action: pan-y; }
+.day-panel.day-from-right { animation: dayFromRight .22s ease; }
+.day-panel.day-from-left { animation: dayFromLeft .22s ease; }

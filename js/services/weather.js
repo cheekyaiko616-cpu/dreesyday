@@ -30,9 +30,20 @@ export async function forecast(pos) {
   if (hit) return hit;
   const daily = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,wind_speed_10m_max';
   const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=8`;
-  const res = await fetchT(url);
-  if (!res.ok) throw new Error('weather');
-  const body = await res.json();
+  // 通信が弱いときのために、2回まで試す。それでもだめなら、前に取れた天気（古くても）を使う
+  let body = null, fail = null;
+  for (let i = 0; i < 2 && !body; i++) {
+    try {
+      const res = await fetchT(url, {}, 15000);
+      if (!res.ok) throw new Error(`天気サーバーの返事が異常です（${res.status}）`);
+      body = await res.json();
+    } catch (e) { fail = e; }
+  }
+  if (!body) {
+    const old = cacheGet('wx', key, Infinity);
+    if (old) return old;
+    throw new Error(fail && fail.name === 'AbortError' ? '通信に時間がかかりすぎました' : (fail && fail.message) || '通信できませんでした');
+  }
   const d = body.daily, h = body.hourly;
   if (!d || !Array.isArray(d.time)) throw new Error('weather');
   const days = {};

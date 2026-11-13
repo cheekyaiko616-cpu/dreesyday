@@ -17,7 +17,7 @@ export async function loadWeather(calendarReady) {
   notify();
   try {
     if (home) w.home = await get(home);
-  } catch (e) { w.status = 'error'; }
+  } catch (e) { w.status = 'error'; w.error = (e && e.message) || ''; }
   // 自宅の天気が読めたら、すぐ表示する（会場の天気を待たない）
   if (w.status !== 'error') w.status = home ? 'ok' : 'nohome';
   notify();

@@ -1,5 +1,6 @@
 // 朝ブリーフの天気カード：場所の天気（Event list と同じ絵文字と言葉）・体感・降水・風と、1時間ごとの帯。
 // 予定の会場があれば、会場の天気も1行で出す。
+import { loadWeather } from '../data/weather-load.js';
 import { el } from '../util/dom.js';
 import { state } from '../state.js';
 import { weatherLabel, daytimeFeels } from '../services/weather.js';
@@ -35,7 +36,11 @@ export function weatherCard(date, events, onSettings) {
     return box;
   }
   const d = w.home && w.home.days[date];
-  if (!d) { box.append(el('p', { class: 'muted', text: '天気を取得できません' })); return box; }
+  if (!d) {
+    box.append(el('p', { class: 'muted', text: '天気を取得できません' }), w.error ? el('p', { class: 'muted', text: `理由：${w.error}` }) : null,
+      el('button', { class: 'btn', type: 'button', text: '再読み込み', onclick: () => loadWeather() }));
+    return box;
+  }
   const { icon, label } = weatherLabel(d.code);
   box.append(
     el('div', { class: 'wx-main' },

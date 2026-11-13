@@ -20,7 +20,6 @@ import { renderBuilder } from './ui/builder-page.js';
 import { renderFavorites } from './ui/favorites-page.js';
 import { initItemSheet } from './ui/item-sheet.js';
 import { initFavSheet } from './ui/fav-sheet.js';
-import { initDaySheet } from './ui/day-sheet.js';
 import { initMonthWheel } from './ui/month-wheel.js';
 import { initSettingsSheet } from './ui/settings-sheet.js';
 import { initSettingsDetail } from './ui/settings-detail.js';
@@ -41,7 +40,6 @@ async function start() {
   initShell();
   initItemSheet();
   initFavSheet();
-  initDaySheet();
   initMonthWheel();
   initSettingsSheet();
   initSettingsDetail();
