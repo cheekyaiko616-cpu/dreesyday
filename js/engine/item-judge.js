@@ -1,7 +1,7 @@
 // 服の写真をAIに判定してもらうための文章と、返ってきた答えの検査（純関数）。
 import { CATEGORIES, SUBS, FORMALITY, PATTERNS, MATERIALS } from '../config.js';
 
-export const JUDGE_PROMPT = [
+export const judgePrompt = () => [
   '写真に写っている服を1点だけ判定し、JSONだけで答えてください。背景や影、モデルの肌は無視します。',
   `category: ${CATEGORIES.map((c) => c.id).join(' | ')}`,
   `sub: ${Object.entries(SUBS).map(([k, v]) => `${k}は ${v.map((x) => x[0]).join('/')}`).join('、')}`,
@@ -10,8 +10,8 @@ export const JUDGE_PROMPT = [
   'color_sub: 別の目立つ色（柄や切り替え）。なければ空文字',
   'warmth: 1（薄手）〜5（真冬）の整数',
   `formality: ${FORMALITY.map((f) => f[0]).join(' | ')}`,
-  `pattern: ${PATTERNS.map((x) => x[0]).join(' | ')}（無地は plain）`,
-  `material: ${MATERIALS.map((x) => x[0]).join(' | ')}（見て分からなければ other）`,
+  `pattern: ${PATTERNS.map((x) => (x[0] === x[1] ? x[0] : `${x[0]}（${x[1]}）`)).join(' | ')}（無地は plain）`,
+  `material: ${MATERIALS.map((x) => (x[0] === x[1] ? x[0] : `${x[0]}（${x[1]}）`)).join(' | ')}（見て分からなければ other）`,
   'rain_ok: 撥水・防水の服なら true'
 ].join('\n');
 

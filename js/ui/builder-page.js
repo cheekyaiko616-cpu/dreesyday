@@ -10,7 +10,6 @@ import { saveFavorite, idsOf } from '../data/favorites.js';
 import { upgradeWithGemini, aiEvaluation } from '../data/evaluation.js';
 import { scoreOutfit, formalityNeed } from '../engine/score.js';
 import { eventKinds } from '../engine/suggest.js';
-import { reasonText } from '../engine/reason.js';
 import { todayIso } from '../util/date.js';
 import { thumbEl, itemName } from './thumb.js';
 import { scoreBars, colorViz } from './outfit-card.js';
@@ -18,7 +17,7 @@ import { toast } from './toast.js';
 import { reviewBox } from './review-box.js';
 import { getReview } from '../data/review-store.js';
 
-const SLOTS = [['outer', 'アウター', true], ['tops', 'トップス', false], ['bottoms', 'ボトムス', false], ['shoes', 'シューズ', true], ['accessory', '小物', true]];
+const SLOTS = [['outer', 'アウター', true], ['tops', 'トップス', 'alt'], ['bottoms', 'ボトムス', false], ['shoes', 'シューズ', true], ['accessory', '小物', true]];
 
 function picks() {
   if (!state.ui.builder) state.ui.builder = { outer: null, tops: null, bottoms: null, shoes: null, accessory: [] };
@@ -42,7 +41,7 @@ function slotRow([key, label, optional]) {
     notify();
   };
   return el('section', { class: 'slot' },
-    el('h2', { class: 'slot-title' }, label, optional ? el('small', { text: '（なしでも可）' }) : null),
+    el('h2', { class: 'slot-title' }, label, null),
     list.length
       ? el('ul', { class: 'picker' }, list.map((it) => el('li', null, el('button', {
         type: 'button', class: 'pick' + (selected(it.id) ? ' on' : ''), 'aria-pressed': String(selected(it.id)), onclick: () => pick(it.id)
@@ -59,12 +58,12 @@ export function renderBuilder(root) {
   const events = eventsOn(date);
   const wx = dayWeather(date, events);
   const fit = fitNow();
-  const ready = fit.tops && fit.bottoms;
+  const ready = fit.bottoms && (fit.tops || fit.outer); // トップスが無くても、アウターとボトムスがあれば可
 
   // 判定（今日の天気と予定で）
   const result = el('section', { class: 'card judge' });
   const mini = el('div', { class: 'judge-mini', role: 'status' });
-  if (!ready) mini.append(el('span', { class: 'muted', text: 'トップスとボトムスを選択' }));
+  if (!ready) mini.append(el('span', { class: 'muted', text: 'ボトムスと、トップスかアウターを選択' }));
   else if (!wx) mini.append(el('span', { class: 'muted', text: '天気が読めないため、点数は出せません' })), result.append(colorViz(fit));
   else {
     const kinds = eventKinds(events.map((ev) => ({ formality: formalityOf(ev) })));
@@ -73,11 +72,11 @@ export function renderBuilder(root) {
     const low = [fit.tops, fit.bottoms, fit.outer, fit.shoes].filter(Boolean).filter((it) => (RULES.formality.level[it.formality] ?? 0) < need.need);
     const appScore = Math.round(r.score.total * 100);
     const scoreB = el('b', { text: String(appScore) });
-    mini.append(scoreB, el('span', { text: reasonText(fit, r, wx, RULES.rain.popThreshold) }));
+    mini.append(scoreB);
     result.append(...[
       el('h2', { class: 'card-title', text: '判定（今日の天気・予定で）' }),
       low.length ? el('p', { class: 'note', text: `予定に対して、くだけすぎのアイテムがあります：${low.map(itemName).join('、')}` }) : null,
-      scoreBars(r.score), colorViz(fit), reviewBox(fit, wx, events, appScore, (n) => { scoreB.textContent = String(n); result.classList.add('gemini'); }),
+      el('details', { class: 'more' }, el('summary', { text: '点数の内訳と色' }), scoreBars(r.score), colorViz(fit)), reviewBox(fit, wx, events, appScore, (n) => { scoreB.textContent = String(n); result.classList.add('gemini'); }),
       el('div', { class: 'actions' },
         el('button', { type: 'button', class: 'btn solid', text: '今日はこれを着る', onclick: async () => { await chooseOutfit(date, fit, 'self'); toast('今日のコーデにしました'); } }),
         el('button', { type: 'button', class: 'btn', text: '☆ 保存', onclick: async (e) => {

@@ -8,15 +8,18 @@ let chain = Promise.resolve(); // 同時に頼まず1件ずつ
 
 /** onScore(n): Geminiの点数が出たとき、画面の点数をその点数だけに書き換える（アプリの点は出さない）。 */
 export function reviewBox(fit, wx, events, appScore, onScore) {
+  const root = el('details', { class: 'review-d more' });
+  const head = el('summary', { text: 'Geminiレビュー' });
   const box = el('div', { class: 'review', 'aria-live': 'polite' });
-  if (!hasReviewKey()) return box; // キーが無いときは何も出さない
+  root.append(head, box);
+  if (!hasReviewKey()) return el('div'); // キーが無いときは何も出さない
   const names = events.map((e) => e.title || e.name || '').filter(Boolean);
   let busy = false;
   const btn = (text, fn) => el('button', { type: 'button', class: 'btn', text, onclick: fn });
   const show = (rv) => {
     if (onScore) onScore(rv.score);
-    clear(box);
-    box.append(el('h3', { class: 'card-title', text: `Geminiレビュー ${rv.score}点` }),
+    clear(box); head.textContent = `Geminiレビュー ${rv.score}点`;
+    box.append(
       rv.color ? el('p', { text: `色: ${rv.color}` }) : null,
       rv.good ? el('p', { text: `◎ ${rv.good}` }) : null, rv.bad ? el('p', { text: `△ ${rv.bad}` }) : null, rv.fix ? el('p', { text: `→ ${rv.fix}` }) : null,
       el('p', { class: 'muted', text: rv.at ? `${rv.at.replace('T', ' ')} のレビュー` : '' }),
@@ -39,5 +42,5 @@ export function reviewBox(fit, wx, events, appScore, onScore) {
   }
   const saved = getReview(fit);
   if (saved) show(saved); else box.append(btn('Geminiにレビューしてもらう', ask));
-  return box;
+  return root;
 }

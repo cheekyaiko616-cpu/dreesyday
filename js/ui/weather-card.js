@@ -42,17 +42,19 @@ export function weatherCard(date, events, onSettings) {
     return box;
   }
   const { icon, label } = weatherLabel(d.code);
+  box.firstChild.remove(); // 通常時は見出しを省いて、場所と今の天気だけ出す
   box.append(
     el('div', { class: 'wx-main' },
       el('span', { class: 'wx-icon', 'aria-hidden': 'true', text: icon }),
       el('div', null,
         el('p', { class: 'wx-place', text: w.homeName }),
         el('p', { class: 'wx-temp' }, el('b', { text: `${d.max}℃` }), el('span', { text: ` / ${d.min}℃　${label}` })))),
-    el('ul', { class: 'wx-facts' },
-      el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
-      el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
-      el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
-    hoursStrip(w.home.hours, date), swingLine(w.home.hours, date));
+    el('details', { class: 'more' }, el('summary', { text: '1時間ごとの天気・くわしく' }),
+      el('ul', { class: 'wx-facts' },
+        el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(d))}℃` })),
+        el('li', null, el('small', { text: '降水' }), el('b', { class: d.pop >= 50 ? 'wet' : '', text: `${d.pop}%` })),
+        el('li', null, el('small', { text: '風' }), el('b', { text: `${d.wind}m/s` }))),
+      hoursStrip(w.home.hours, date), swingLine(w.home.hours, date)));
   // 予定の会場の天気
   const seen = new Set();
   events.forEach((ev) => {

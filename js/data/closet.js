@@ -18,8 +18,8 @@ export function cleanItem(x) {
     sub_category: pick(x.sub_category, SUBS[category], 'other'),
     warmth: Math.max(1, Math.min(5, Math.round(+x.warmth || 3))),
     formality: pick(x.formality, FORMALITY, 'casual'),
-    pattern: pick(x.pattern, PATTERNS, 'plain'),
-    material: pick(x.material, MATERIALS, 'other'),
+    pattern: typeof x.pattern === 'string' && x.pattern ? x.pattern.slice(0, 24) : 'plain', // 一覧は設定で変えられるので、中身の確認はしない
+    material: typeof x.material === 'string' && x.material ? x.material.slice(0, 24) : 'other',
     color_main: HEX.test(x.color_main) ? x.color_main.toLowerCase() : '#808080',
     color_sub: HEX.test(x.color_sub) ? x.color_sub.toLowerCase() : '',
     rain_ok: x.rain_ok === true,

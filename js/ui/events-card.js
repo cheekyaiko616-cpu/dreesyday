@@ -9,7 +9,7 @@ const fLabel = (k) => (EVENT_FORMALITY.find((x) => x[0] === k) || ['', ''])[1];
 
 export function eventsCard(date, events) {
   const c = state.calendar;
-  const box = el('section', { class: 'card ev' }, el('h2', { class: 'card-title', text: '予定' }));
+  const box = el('section', { class: 'card ev' });
   if (c.status === 'loading') { box.append(el('p', { class: 'muted', text: '読み込み中…' })); return box; }
   if (c.status === 'stale') box.append(el('p', { class: 'note', text: '前回の予定を表示中' }));
   if (c.status === 'error') box.append(el('p', { class: 'note', text: '予定を読めません' }));
@@ -20,8 +20,7 @@ export function eventsCard(date, events) {
       el('p', { class: 'ev-title', text: ev.title }),
       el('p', { class: 'ev-meta', text: [
         ev.from === ev.to ? '' : `${md(ev.from)}〜${md(ev.to)}`,
-        ev.place, ev.open ? `開場 ${ev.open}` : '', ev.start ? `開演 ${ev.start}` : ''
-      ].filter(Boolean).join('　') }),
-      el('p', { class: 'ev-dress', text: `服装：${fLabel(formalityOf(ev))}` }))))));
+        ev.place, ev.open ? `開場 ${ev.open}` : '', ev.start ? `開演 ${ev.start}` : '', `服装：${fLabel(formalityOf(ev))}`
+      ].filter(Boolean).join('　') }))))));
   return box;
 }

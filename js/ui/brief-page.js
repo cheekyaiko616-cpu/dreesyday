@@ -24,6 +24,7 @@ import { getReview } from '../data/review-store.js';
 
 let sugKey = '';      // 提案の計算結果を使い回すための印（入力が同じなら、同じ結果）
 let sugRes = null;
+let sugIdx = 0;       // 提案は1つずつ見せる（何番目か）
 let redo = false;     // 着たコーデを「選び直す」中か
 
 const selDate = () => (state.ui.briefDate && state.ui.briefDate >= addDaysIso(todayIso(), -60) ? state.ui.briefDate : todayIso());
@@ -50,16 +51,20 @@ async function addFavorite(fit, date) {
 function outfitSection(date, events, wx) {
   const rec = wearOn(date);
   if (rec && !redo) return feedbackCard(rec, `${dayLabel(date)}のコーデ`, () => { redo = true; notify(); });
-  const box = el('section', { class: 'sect' }, el('h2', { class: 'sect-title', text: 'コーデの提案' }));
+  const box = el('section', { class: 'sect' });
+  const head = el('div', { class: 'sect-head' }, el('h2', { class: 'sect-title', text: 'コーデの提案' }));
+  box.append(head);
   if (date < todayIso()) { box.append(el('p', { class: 'muted card', text: 'この日の記録はありません' })); return box; }
   if (!wx) { box.append(el('p', { class: 'muted card', text: date > addDaysIso(todayIso(), 7) ? '天気の予報は1週間先までです。近くなったら提案できます' : '天気が読めないため、提案を出せません' })); return box; }
   const kinds = events.map((ev) => ({ formality: formalityOf(ev) }));
   // 入力（手持ち・学習・お気に入りの中身・天気・予定）が同じなら、前回の計算結果を使う
   const key = JSON.stringify([state.items, state.adjust, state.favorites.map((f) => f.items), wx, kinds]);
-  if (key !== sugKey) { sugRes = suggest({ items: state.items, weather: wx, events: kinds, adjust: state.adjust, favorites: state.favorites }, RULES); sugKey = key; }
+  if (key !== sugKey) { sugIdx = 0; sugRes = suggest({ items: state.items, weather: wx, events: kinds, adjust: state.adjust, favorites: state.favorites }, RULES); sugKey = key; }
   const res = sugRes;
   if (res.note) box.append(el('p', { class: 'note', text: res.note }));
-  res.outfits.forEach((o) => box.append(outfitCard(o, [
+  if (sugIdx >= res.outfits.length) sugIdx = 0;
+  if (res.outfits.length > 1) head.replaceChildren(el('div', { class: 'seg-bar' }, res.outfits.map((o, i) => el('button', { type: 'button', class: 'seg-btn' + (i === sugIdx ? ' on' : ''), 'aria-pressed': String(i === sugIdx), text: `案${o.rank}`, onclick: () => { sugIdx = i; notify(); } }))));
+  res.outfits.filter((o, i) => i === sugIdx).forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),
     el('button', { type: 'button', class: 'btn', text: '☆ 保存', 'aria-label': 'お気に入りに保存', onclick: () => addFavorite(o.items, date) })
   ], false, (set) => reviewBox(o.items, wx, events, Math.round(o.score.total * 100), set))));

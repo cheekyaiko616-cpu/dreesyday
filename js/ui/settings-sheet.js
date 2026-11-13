@@ -1,9 +1,12 @@
 // 設定の画面（下から出る）：項目の一覧。項目をタップすると、入力用の画面（settings-detail）が開く。
 import { $, el, clear } from '../util/dom.js';
 import { mountSheet, showSheet, hideSheet } from './sheet.js';
-import { state } from '../state.js';
+import { state, notify } from '../state.js';
 import { EVENT_FORMALITY, APP } from '../config.js';
 import { saveSettings } from '../data/settings.js';
+import { PATTERNS, MATERIALS } from '../config.js';
+import { saveItem } from '../data/closet.js';
+import { applyByName, applyByPhoto, byPhoto } from '../data/reclassify.js';
 import { formalityOf } from '../data/calendar-feed.js';
 import { loadWeather } from '../data/weather-load.js';
 import { resetLearning } from '../data/learning.js';
@@ -91,6 +94,45 @@ function dailyGroup(done) {
     el('button', { type: 'button', class: 'btn', text: '保存', onclick: async () => { await saveSettings({ daily: ta.value.split(/[\s、,]+/) }); toast('保存しました'); done(); } }));
 }
 
+/** 柄・素材の分類を足す／消す。消した分類の服は「無地」「その他」に戻す。 */
+function classGroup(done) {
+  const kinds = [['柄', 'patterns', PATTERNS, 'pattern', 'plain'], ['素材', 'materials', MATERIALS, 'material', 'other']];
+  const box = el('div', { class: 'class-edit' });
+  const draw = () => {
+    clear(box);
+    kinds.forEach(([label, key, list, field, def]) => {
+      const input = el('input', { type: 'text', maxlength: 12, placeholder: `${label}を追加（例: ${key === 'patterns' ? 'ヘリンボーン' : 'シルク'}）`, 'aria-label': `${label}を追加` });
+      const add = async () => {
+        const t = input.value.trim().slice(0, 12);
+        if (!t) return;
+        if (list.some((x) => x[1] === t)) { toast('すでにあります'); return; }
+        await saveSettings({ [key]: [...list, [t, t]] }); draw(); input.value = '';
+        // すでに保存してある服にも当てはめる
+        const n = await applyByName(field, t, t);
+        const rest = geminiKey() ? byPhoto(field, t).length : 0;
+        if (rest && window.confirm(`写真のある服${rest}着を、Geminiで「${t}」かどうか確認して当てはめますか？（Geminiを${rest}回使います）`)) {
+          toast('確認中…（そのまま待ってください）');
+          const r = await applyByPhoto(field, t, t, (d, all) => toast(`確認中 ${d}/${all}`));
+          notify();
+          toast(`${n + r.applied}着に「${t}」を当てはめました${r.error ? `（途中で止まりました：${r.error}）` : ''}`);
+        } else toast(n ? `${n}着に「${t}」を当てはめました` : `「${t}」を追加しました`);
+        notify();
+      };
+      box.append(group(label, el('h3', { class: 'card-title', text: label }),
+        el('ul', { class: 'chips' }, list.map(([id, name]) => el('li', { class: 'chip-del' }, name,
+          id === def ? null : el('button', { type: 'button', 'aria-label': `${name}を削除`, text: '×', onclick: async () => {
+            const used = state.items.filter((x) => x[field] === id);
+            if (used.length && !window.confirm(`「${name}」の服が${used.length}着あります。「${list.find((x) => x[0] === def)[1]}」に戻して削除しますか？`)) return;
+            for (const it of used) await saveItem({ ...it, [field]: def }, { quiet: true });
+            await saveSettings({ [key]: list.filter((x) => x[0] !== id) }); draw();
+          } })))),
+        el('div', { class: 'inline-row' }, input, el('button', { type: 'button', class: 'btn', text: '追加', onclick: add }))));
+    });
+  };
+  draw();
+  return [box];
+}
+
 function tabGroup() {
   const tabs = [...new Set(state.calendar.items.map((x) => x.tab).filter(Boolean))];
   if (!tabs.length) return null;
@@ -174,6 +216,7 @@ export function openSettings() {
     row('天気の場所', () => (state.settings.home ? state.settings.home.name : '未設定'), homeGroup, refresh),
     row('からだとサイズ', () => [b().height && `${b().height}cm`, b().top].filter(Boolean).join('・') || '未登録', bodyGroup, refresh),
     row('毎日の持ち物', () => shorten(state.settings.daily.join('、')) || 'なし', dailyGroup, refresh),
+    row('分類（柄・素材）', () => `柄${PATTERNS.length}・素材${MATERIALS.length}`, classGroup, refresh),
     row('Gemini APIキー', () => (geminiKey() ? '登録済み' : '未登録'), geminiGroup, refresh));
   if (tabs.length) rows.push(row('タブごとの服装', () => `${tabs.length}件`, tabGroup, refresh));
   rows.push(row('データ', () => '', dataGroup, refresh));

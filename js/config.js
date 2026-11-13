@@ -37,8 +37,11 @@ export const SUBS = {
 export const FORMALITY = [['casual', 'カジュアル'], ['neat', 'きれいめ'], ['formal', 'フォーマル']];
 export const EVENT_FORMALITY = [['casual', 'カジュアル'], ['neat', 'きれいめ'], ['formal', 'フォーマル'], ['sports', '観戦・アウトドア'], ['home', '家で過ごす']];
 // 柄と素材（AI判定でも入る。空は「無地」「その他」）
-export const PATTERNS = [['plain', '無地'], ['stripe', 'ストライプ'], ['check', 'チェック'], ['border', 'ボーダー'], ['dot', 'ドット'], ['print', '柄・プリント']];
-export const MATERIALS = [['other', 'その他'], ['cotton', '綿'], ['linen', '麻'], ['wool', 'ウール'], ['denim', 'デニム'], ['poly', 'ポリエステル'], ['nylon', 'ナイロン'], ['leather', 'レザー'], ['down', 'ダウン']];
+export const DEFAULT_PATTERNS = [['plain', '無地'], ['stripe', 'ストライプ'], ['check', 'チェック'], ['border', 'ボーダー'], ['dot', 'ドット'], ['print', '柄・プリント']];
+// 設定で追加・削除できる分類（settings.js が中身を入れ替える。配列そのものは変えない）
+export const PATTERNS = DEFAULT_PATTERNS.map((x) => [...x]);
+export const DEFAULT_MATERIALS = [['other', 'その他'], ['cotton', '綿'], ['linen', '麻'], ['wool', 'ウール'], ['denim', 'デニム'], ['poly', 'ポリエステル'], ['nylon', 'ナイロン'], ['leather', 'レザー'], ['down', 'ダウン']];
+export const MATERIALS = DEFAULT_MATERIALS.map((x) => [...x]);
 export const STATUS = [['active', '使える'], ['laundry', '洗濯中'], ['cleaning', 'クリーニング'], ['retired', 'しまっている']];
 
 // ワンタップ評価

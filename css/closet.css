@@ -37,3 +37,15 @@
 
 /* 画面の外にあるアイテムは描画を後回しにして、一覧を軽くする */
 .grid-item { content-visibility: auto; contain-intrinsic-size: auto 150px; }
+
+/* リスト表示 */
+.rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-1); }
+.row-item { display: flex; align-items: center; gap: var(--sp-3); width: 100%; min-height: 52px; padding: var(--sp-2) var(--sp-3); border: 1px solid var(--line); border-radius: var(--r-m); background: var(--surface); text-align: left; content-visibility: auto; contain-intrinsic-size: auto 52px; }
+.row-item.off { opacity: .5; }
+.swatch { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); }
+.row-main { display: flex; flex-direction: column; min-width: 0; }
+
+/* 分類の編集 */
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: 0 0 var(--sp-2); padding: 0; }
+.chip-del { display: inline-flex; align-items: center; gap: 4px; padding: 4px 6px 4px 12px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); font-size: var(--fs-sm); }
+.chip-del button { border: 0; background: none; min-width: 28px; min-height: 28px; color: var(--muted); font-size: 16px; }

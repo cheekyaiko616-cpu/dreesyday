@@ -81,3 +81,30 @@
 .day-panel { margin-top: var(--sp-3); touch-action: pan-y; }
 .day-panel.day-from-right { animation: dayFromRight .22s ease; }
 .day-panel.day-from-left { animation: dayFromLeft .22s ease; }
+
+/* 1画面に収める：提案は1つずつ、予定・持ち物は小さく */
+.sect-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); }
+.sect-head .seg-btn { min-height: 32px; min-width: 48px; }
+.ev, .bring { padding: var(--sp-3); }
+.ev .ev-list { gap: var(--sp-2); }
+.ev .ev-title { font-size: var(--fs-md); }
+.bring .card-title { margin-bottom: var(--sp-1); }
+.bring .check-btn { min-height: 36px; }
+.wx { padding: var(--sp-3) var(--sp-4); }
+
+.bring-sum { display: flex; align-items: center; justify-content: space-between; min-height: 32px; font-size: var(--fs-cap); font-weight: 600; color: var(--muted); letter-spacing: .04em; }
+.bring-sum .count { margin-left: auto; margin-right: 6px; font-weight: 500; }
+.bring .checks { margin-top: var(--sp-2); }
+.wx-icon { font-size: 34px; }
+#app-main { gap: var(--sp-2); }
+
+.wx-venue { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-cell { min-height: 46px; }
+.cal-wrap { padding: 10px; }
+
+.ev .ev-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ev-row > div { min-width: 0; flex: 1; }
+.wx details.more summary { min-height: 28px; }
+.wx-main { gap: var(--sp-2); }
+.wx-temp b { font-size: 28px; }
+.outfit .actions .btn { min-height: 40px; }
