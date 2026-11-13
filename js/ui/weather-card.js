@@ -48,7 +48,7 @@ export function weatherCard(date, events, onSettings) {
   (events || []).forEach((ev) => {
     const v = w.venues[ev.place];
     if (!v || seen.has(ev.place) || !v.data.days[date]) return;
-    seen.add(ev.place); away.push({ name: v.name, d: v.data.days[date], color: ev.color });
+    seen.add(ev.place); away.push({ name: v.name, d: v.data.days[date], hours: v.data.hours, color: ev.color });
   });
   const useAway = state.ui.wxMode === 'away' && away.length > 0;
   const cur = useAway ? away[state.ui.wxAway % away.length] : null;
@@ -65,13 +65,13 @@ export function weatherCard(date, events, onSettings) {
       el('span', { class: 'wx-icon', 'aria-hidden': 'true', text: icon }),
       el('div', { class: 'wx-body' },
         el('p', { class: 'wx-place', text: cur ? cur.name : w.homeName }),
-        el('p', { class: 'wx-temp' }, el('b', { text: `${dd.max}℃` }), el('span', { text: ` / ${dd.min}℃　${label}` }))),
+        el('p', { class: 'wx-temp' }, el('b', { text: `${dd.max}℃` }), el('span', { text: ` / ${dd.min}℃` }), el('span', { class: 'wx-label', text: label }))),
       seg),
-    el('details', { class: 'more' }, el('summary', { text: cur ? 'くわしく' : '1時間ごとの天気・くわしく' }),
+    el('details', { class: 'more' }, el('summary', { text: '1時間ごとの天気・くわしく' }),
       el('ul', { class: 'wx-facts' },
         el('li', null, el('small', { text: '体感(日中)' }), el('b', { text: `${Math.round(daytimeFeels(dd))}℃` })),
         el('li', null, el('small', { text: '降水' }), el('b', { class: dd.pop >= 50 ? 'wet' : '', text: `${dd.pop}%` })),
         el('li', null, el('small', { text: '風' }), el('b', { text: `${dd.wind}m/s` }))),
-      cur ? null : hoursStrip(w.home.hours, date), cur ? null : swingLine(w.home.hours, date)));
+      hoursStrip(cur ? cur.hours : w.home.hours, date), swingLine(cur ? cur.hours : w.home.hours, date)));
   return box;
 }

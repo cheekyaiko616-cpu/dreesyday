@@ -125,18 +125,11 @@
 
 button.ev-row { width: 100%; text-align: left; background: none; border: 0; padding: 0; font: inherit; color: inherit; }
 button.ev-row::after { content: '›'; margin-left: auto; color: var(--muted); font-size: 20px; align-self: center; }
-.es-chip { margin-bottom: var(--sp-3); }
-.es-row { display: flex; gap: var(--sp-3); padding: var(--sp-3) 0; border-top: 1px solid var(--line); }
-.es-row small { flex: none; width: 64px; color: var(--muted); }
-.es-row p { margin: 0 0 var(--sp-2); }
-#es-body { padding-top: var(--sp-3); }
-.es-chip { display: inline-block; }
 
-/* 予定を押すと、その場で開く */
-.ev-item { border-left: 4px solid var(--c); padding-left: var(--sp-3); }
-.ev-item > summary.ev-row { list-style: none; display: flex; align-items: center; gap: var(--sp-2); min-height: 40px; border-left: 0; padding-left: 0; cursor: pointer; }
-.ev-item > summary::-webkit-details-marker { display: none; }
-.ev-item > summary::after { content: '▼'; font-size: 10px; margin-left: auto; color: var(--muted); transition: transform .15s ease; }
-.ev-item[open] > summary::after { transform: rotate(180deg); }
-.ev-item .ev-title { margin: 0; flex: 1; min-width: 0; }
-.ev-detail { padding-bottom: var(--sp-2); }
+/* 予定を押すと、Event list のその予定に移る */
+a.ev-link { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-1) var(--sp-3); border-left: 4px solid var(--c); text-decoration: none; color: inherit; min-height: 44px; }
+a.ev-link .chip { background: var(--c); flex: none; }
+a.ev-link .ev-main { flex: 1; min-width: 0; }
+a.ev-link .ev-title { margin: 0; }
+a.ev-link .ev-meta { margin: 0; white-space: normal; }
+a.ev-link::after { content: '›'; color: var(--muted); font-size: 22px; flex: none; }

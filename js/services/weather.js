@@ -28,7 +28,7 @@ export const cachedForecast = (pos) => cacheGet('wx', `${pos.lat.toFixed(2)},${p
  * 返す: { days: { 'YYYY-MM-DD': { code, max, min, feelMax, feelMin, pop, wind } }, hours: [{ date, hour, code, temp, pop }] }
  */
 export async function forecast(pos, light = 0) {
-  // light：会場用の軽い取得。1時間ごとの天気は取らず、必要な日数（light日）だけ取る
+  // light：会場用の軽い取得。必要な日数（light日）だけ取る
   const base = `${pos.lat.toFixed(2)},${pos.lon.toFixed(2)}`;
   const key = light ? `${base}:${light}` : base;
   const full = cacheGet('wx', base, WX.ttl); // 同じ場所の完全版があれば、それを使う
@@ -36,7 +36,7 @@ export async function forecast(pos, light = 0) {
   const hit = cacheGet('wx', key, WX.ttl);
   if (hit) return hit;
   const daily = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,wind_speed_10m_max';
-  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}${light ? '' : '&hourly=weather_code,temperature_2m,precipitation_probability'}&wind_speed_unit=ms&timezone=auto&forecast_days=${light || 8}`;
+  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=${light || 8}`;
   // 通信が弱いときのために、2回まで試す。それでもだめなら、前に取れた天気（古くても）を使う
   let body = null, fail = null;
   for (let i = 0; i < 2 && !body; i++) {

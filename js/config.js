@@ -2,6 +2,9 @@
 export const APP = { id: 'morning-brief', name: 'Dressy Day', schema: 1 };
 
 // Event list が保存する「カレンダーに追加した予定」の一覧（同じ github.io の中なので、そのまま読める）
+// Event list アプリの場所（予定の詳細を開くときに使う）
+export const EVENT_LIST_URL = 'https://cheekyaiko616-cpu.github.io/event-list/';
+
 export const CALENDAR = {
   url: 'https://cheekyaiko616-cpu.github.io/event-list/calendar.json',
   cacheKey: 'morningbrief.calendar.v1' // 最後に読めた内容（通信できないときに使う）
