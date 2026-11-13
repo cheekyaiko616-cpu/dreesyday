@@ -19,7 +19,7 @@ export function dayPanel(day) {
   };
   const w = state.weather.home && state.weather.home.days[day];
   const evs = eventsOn(day), rec = wearOn(day);
-  const panel = el('section', { class: 'card day-panel' },
+  const panel = el('section', { class: 'card day-panel', 'data-swipe': '1' },
     el('div', { class: 'day-nav' },
       el('button', { type: 'button', class: 'btn', 'aria-label': '前の日', text: '‹', onclick: () => go(-1) }),
       el('h2', { text: mdLong(day) }),

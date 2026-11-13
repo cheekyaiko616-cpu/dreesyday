@@ -63,7 +63,7 @@ export function renderCalendar(root) {
       el('span', { text: `${vy}年` }), el('span', { class: 'sp', text: `${vm + 1}月` }), el('span', { class: 'caret', 'aria-hidden': 'true', text: '▾' })),
     el('button', { type: 'button', class: 'today-btn', text: '今日', onclick: () => { const n = new Date(); setMonth(n.getFullYear(), n.getMonth()); } }));
 
-  const wrap = el('div', { class: 'cal-wrap' },
+  const wrap = el('div', { class: 'cal-wrap', 'data-swipe': '1' },
     el('div', { class: 'cal-head' },
       el('button', { type: 'button', class: 'btn', 'aria-label': '前の月', text: '‹', onclick: () => move(-1) }),
       head,

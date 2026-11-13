@@ -8,6 +8,7 @@ import { dayWeather } from '../data/weather-load.js';
 import { wearOn, chooseOutfit } from '../data/learning.js';
 import { saveFavorite, idsOf } from '../data/favorites.js';
 import { upgradeWithGemini, aiEvaluation } from '../data/evaluation.js';
+import { onHSwipe, slideIn } from './gestures.js';
 import { suggest } from '../engine/suggest.js';
 import { bringList } from '../engine/bring.js';
 import { todayIso, addDaysIso, mdLong, md } from '../util/date.js';
@@ -51,7 +52,7 @@ async function addFavorite(fit, date) {
 function outfitSection(date, events, wx) {
   const rec = wearOn(date);
   if (rec && !redo) return feedbackCard(rec, `${dayLabel(date)}のコーデ`, () => { redo = true; notify(); });
-  const box = el('section', { class: 'sect' });
+  const box = el('section', { class: 'sect', 'data-swipe': '1' });
   const head = el('div', { class: 'sect-head' }, el('h2', { class: 'sect-title', text: 'コーデの提案' }));
   box.append(head);
   if (date < todayIso()) { box.append(el('p', { class: 'muted card', text: 'この日の記録はありません' })); return box; }
@@ -64,6 +65,14 @@ function outfitSection(date, events, wx) {
   if (res.note) box.append(el('p', { class: 'note', text: res.note }));
   if (sugIdx >= res.outfits.length) sugIdx = 0;
   if (res.outfits.length > 1) head.replaceChildren(el('div', { class: 'seg-bar' }, res.outfits.map((o, i) => el('button', { type: 'button', class: 'seg-btn' + (i === sugIdx ? ' on' : ''), 'aria-pressed': String(i === sugIdx), text: `案${o.rank}`, onclick: () => { sugIdx = i; notify(); } }))));
+  if (res.outfits.length > 1) {
+    onHSwipe(box, (dir) => { // 左右にスワイプして、案を切り替える
+      const n = sugIdx + dir;
+      if (n < 0 || n >= res.outfits.length) return;
+      sugIdx = n; notify();
+      requestAnimationFrame(() => requestAnimationFrame(() => { const c = document.querySelector('.sect .outfit'); if (c) slideIn(c, dir); }));
+    }, '.hours, input, textarea');
+  }
   res.outfits.filter((o, i) => i === sugIdx).forEach((o) => box.append(outfitCard(o, [
     el('button', { type: 'button', class: 'btn solid', text: 'これを着る', onclick: () => { redo = false; chooseOutfit(date, o.items, 'suggest'); } }),
     el('button', { type: 'button', class: 'btn', text: '☆ 保存', 'aria-label': 'お気に入りに保存', onclick: () => addFavorite(o.items, date) })

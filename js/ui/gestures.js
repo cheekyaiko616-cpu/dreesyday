@@ -4,10 +4,10 @@
 const swipeAxis = (dx, dy) => (Math.abs(dy) > Math.abs(dx) * 1.3 ? 'v' : 'h');
 
 /** 左右スワイプを受け取る。cb(1)=左へスワイプ（次）、cb(-1)=右へスワイプ（前）。 */
-export function onHSwipe(el, cb) {
+export function onHSwipe(el, cb, ignore = '') {
   let sx = 0, sy = 0, st = 0, active = false, axis = '';
   el.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) { active = false; return; }
+    if (e.touches.length !== 1 || (ignore && e.target.closest && e.target.closest(ignore))) { active = false; return; }
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); active = true; axis = '';
   }, { passive: true });
   el.addEventListener('touchmove', (e) => {

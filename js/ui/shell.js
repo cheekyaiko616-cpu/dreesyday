@@ -1,4 +1,5 @@
 // 画面の枠：上のタイトル、下のタブ（ブリーフ・クローゼット・コーデ・お気に入り・設定）。
+import { onHSwipe, slideIn } from './gestures.js';
 import { $, el, clear } from '../util/dom.js';
 import { state, notify } from '../state.js';
 import { openSettings } from './settings-sheet.js';
@@ -15,8 +16,19 @@ const ICONS = {
 };
 const NAV = [['brief', 'ブリーフ'], ['calendar', 'カレンダー'], ['closet', 'クローゼット'], ['builder', 'コーデ'], ['favorites', 'お気に入り'], ['settings', '設定']];
 
+const TABS = NAV.map((x) => x[0]).filter((x) => x !== 'settings');
+
 export function initShell() {
   $('#app-header').append(el('p', { class: 'brand', text: 'Dressy Day' }));
+  // 画面を左右にスワイプすると、タブを切り替える（自分でスワイプを使う場所・横に動く場所・開いている画面の上では動かない）
+  const main = $('#app-main');
+  onHSwipe(main, (dir) => {
+    if (document.documentElement.classList.contains('lock')) return;
+    const i = TABS.indexOf(state.screen) + dir;
+    if (i < 0 || i >= TABS.length) return;
+    state.screen = TABS[i]; main.scrollTop = 0; notify();
+    requestAnimationFrame(() => requestAnimationFrame(() => slideIn(main, dir)));
+  }, '[data-swipe], .picker, .filters, .hours, .wheel, input, textarea, select');
 }
 
 export function renderNav() {

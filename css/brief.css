@@ -108,3 +108,9 @@
 .wx-main { gap: var(--sp-2); }
 .wx-temp b { font-size: 28px; }
 .outfit .actions .btn { min-height: 40px; }
+
+#app-main.day-from-right { animation: dayFromRight .22s ease; }
+#app-main.day-from-left { animation: dayFromLeft .22s ease; }
+.outfit.day-from-right { animation: dayFromRight .22s ease; }
+.outfit.day-from-left { animation: dayFromLeft .22s ease; }
+.sect { touch-action: pan-y; }
