@@ -23,7 +23,7 @@ export function sampleForecast(pos) {
       : { code: i === 1 ? 63 : 1, max: 17, min: 9, feelMax: 15, feelMin: 6, pop: i === 1 ? 70 : 10, uv: 4, wind: 4 };
   });
   const hours = [];
-  [0, 1, 2, 3, 4, 5, 6, 7].forEach((i) => { for (let h = 6; h <= 23; h++) hours.push({ date: addDaysIso(t, i), hour: h, code: h > 14 && venue ? 61 : 1, temp: Math.round(9 + 6 * Math.sin(((h - 8) / 12) * Math.PI)), pop: venue && h > 13 ? 60 : 10 }); });
+  [0, 1, 2, 3, 4, 5, 6, 7].forEach((i) => { for (let h = 6; h <= 23; h++) hours.push({ date: addDaysIso(t, i), hour: h, code: h > 14 && venue ? 61 : 1, temp: Math.round(9 + 6 * Math.sin(((h - 8) / 12) * Math.PI)), pop: venue && h > 13 ? 60 : 10, rain: venue && h > 13 ? Math.round((h - 13) * 0.4 * 10) / 10 : 0, wind: venue ? 3 + (h % 5) : 2 }); });
   return { days, hours };
 }
 

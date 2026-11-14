@@ -25,18 +25,19 @@ export const cachedForecast = (pos) => cacheGet('wx', `${pos.lat.toFixed(2)},${p
 
 /**
  * 場所(lat/lon)の今日から8日分（1週間先まで）と、1時間ごと。通信できなければ例外。
- * 返す: { days: { 'YYYY-MM-DD': { code, max, min, feelMax, feelMin, pop, wind } }, hours: [{ date, hour, code, temp, pop }] }
+ * 返す: { days: { 'YYYY-MM-DD': { code, max, min, feelMax, feelMin, pop, wind } }, hours: [{ date, hour, code, temp, pop, rain(mm), wind(m/s) }] }
  */
 export async function forecast(pos, light = 0) {
   // light：会場用の軽い取得。必要な日数（light日）だけ取る
   const base = `${pos.lat.toFixed(2)},${pos.lon.toFixed(2)}`;
   const key = light ? `${base}:${light}` : base;
+  const fresh = (v) => v && (!v.hours.length || v.hours[0].wind !== undefined); // 降水量・風が入っていない古い保存は使わない
   const full = cacheGet('wx', base, WX.ttl); // 同じ場所の完全版があれば、それを使う
-  if (full) return full;
+  if (fresh(full)) return full;
   const hit = cacheGet('wx', key, WX.ttl);
-  if (hit) return hit;
+  if (fresh(hit)) return hit;
   const daily = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,wind_speed_10m_max';
-  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability&wind_speed_unit=ms&timezone=auto&forecast_days=${light || 8}`;
+  const url = `${WX.api}?latitude=${pos.lat}&longitude=${pos.lon}&daily=${daily}&hourly=weather_code,temperature_2m,precipitation_probability,precipitation,wind_speed_10m&wind_speed_unit=ms&timezone=auto&forecast_days=${light || 8}`;
   // 通信が弱いときのために、2回まで試す。それでもだめなら、前に取れた天気（古くても）を使う
   let body = null, fail = null;
   for (let i = 0; i < 2 && !body; i++) {
@@ -65,7 +66,7 @@ export async function forecast(pos, light = 0) {
   (h && h.time ? h.time : []).forEach((t, i) => {
     const hour = +t.slice(11, 13);
     if (hour < WX.hoursFrom || hour > WX.hoursTo) return;
-    hours.push({ date: t.slice(0, 10), hour, code: h.weather_code[i], temp: Math.round(h.temperature_2m[i]), pop: h.precipitation_probability[i] ?? 0 });
+    hours.push({ date: t.slice(0, 10), hour, code: h.weather_code[i], temp: Math.round(h.temperature_2m[i]), pop: h.precipitation_probability[i] ?? 0, rain: Math.round((h.precipitation ? h.precipitation[i] ?? 0 : 0) * 10) / 10, wind: Math.round(h.wind_speed_10m ? h.wind_speed_10m[i] ?? 0 : 0) });
   });
   const out = { days, hours };
   cacheSet('wx', key, out, 30);

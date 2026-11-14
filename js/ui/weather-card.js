@@ -12,9 +12,11 @@ function hoursStrip(hours, date) {
   if (!list.length) return null;
   return el('ol', { class: 'hours', 'aria-label': '1時間ごとの天気' }, list.map((h) => {
     const { icon, label } = weatherLabel(h.code);
-    return el('li', { 'aria-label': `${h.hour}時 ${label} ${h.temp}度 降水${h.pop}%` },
+    return el('li', { 'aria-label': `${h.hour}時 ${label} ${h.temp}度 降水${h.pop}%${h.rain === undefined ? '' : ` ${h.rain}ミリ`}${h.wind === undefined ? '' : ` 風${h.wind}メートル`}` },
       el('small', { text: `${h.hour}時` }), el('span', { 'aria-hidden': 'true', text: icon }),
-      el('b', { text: `${h.temp}℃` }), el('small', { class: h.pop >= 50 ? 'wet' : '', text: `${h.pop}%` }));
+      el('b', { text: `${h.temp}℃` }), el('small', { class: h.pop >= 50 ? 'wet' : '', text: `${h.pop}%` }),
+      h.rain === undefined ? null : el('small', { class: 'rain' + (h.rain >= 1 ? ' wet' : ''), text: `${h.rain}mm` }),
+      h.wind === undefined ? null : el('small', { class: 'wind' + (h.wind >= 8 ? ' wet' : ''), text: `${h.wind}m/s` }));
   }));
 }
 
